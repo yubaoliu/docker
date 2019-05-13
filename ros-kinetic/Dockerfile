@@ -30,7 +30,7 @@ ENTRYPOINT ["/home/entrypoint.sh"]
 
 
 # ROS Environment config
-RUN rosdep init && rosdep update \
+RUN rosdep init && rosdep update && \
     mkdir /home/catkin_ws && cd /home/catkin_ws \
     && mkdir src/ && cd src/ && catkin_init_workspace
 

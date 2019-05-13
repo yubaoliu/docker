@@ -14,8 +14,8 @@ run:
 	--net host \
 	-e DISPLAY=$$DISPLAY \
 	-v $$HOME/.Xauthority:/root/.Xauthority \
-	-v /home/yubao/data/docker-ros:/catkin_ws/src \
-	-v /home/yubao/data/Project/gtsam:/catkin_ws/src \
+	-v /home/yubao/data/docker-ros:/home/catkin_ws/src \
+	-v /home/yubao/data/Project/gtsam:/home/catkin_ws/src \
 	--name $(CONTAINER_NAME) \
 	$(NAME):$(VERSION)
 					
