@@ -18,15 +18,16 @@ RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main"
 
 # install ros packages
 RUN apt-get update && apt-get install -y \
-    ros-kinetic-desktop-full 
+    ros-kinetic-desktop-full  \
+    python-rosinstall python-rosinstall-generator python-wstool build-essential 
 
 
 # config entrypoint
 RUN echo "#!/bin/bash" >> /home/entrypoint.sh && \
     echo "source /opt/ros/kinetic/setup.bash" >> /home/entrypoint.sh && \
     echo "bash" >> /home/entrypoint.sh && \
-    chmod 755 /home/entrypoint.sh
-ENTRYPOINT ["/home/entrypoint.sh"]
+    chmod 755 /home/entrypoint.sh && \
+    source /home/entrypoint.sh
 
 
 # ROS Environment config
@@ -34,6 +35,8 @@ RUN rosdep init && rosdep update && \
     mkdir /home/catkin_ws && cd /home/catkin_ws \
     && mkdir src/ && cd src/ && catkin_init_workspace
 
+
+ENTRYPOINT ["/home/entrypoint.sh"]
 
 # clean
 RUN rm -rf /var/lib/apt/lists/*
