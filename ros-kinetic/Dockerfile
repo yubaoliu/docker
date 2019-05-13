@@ -3,6 +3,8 @@
 FROM ubuntu:16.04
 MAINTAINER yubaoliu89@gmail.com
 
+SHELL ["/bin/bash", "-c"]
+
 RUN apt-get update && apt-get install -y lsb-release \
     build-essential \
     git \
@@ -27,7 +29,7 @@ RUN echo "#!/bin/bash" >> /home/entrypoint.sh && \
     echo "source /opt/ros/kinetic/setup.bash" >> /home/entrypoint.sh && \
     echo "bash" >> /home/entrypoint.sh && \
     chmod 755 /home/entrypoint.sh && \
-    source /home/entrypoint.sh
+    /bin/bash -c "source /home/entrypoint.sh"
 
 
 # ROS Environment config
