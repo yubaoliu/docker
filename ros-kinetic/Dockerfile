@@ -4,6 +4,7 @@ FROM ubuntu:16.04
 MAINTAINER yubaoliu89@gmail.com
 
 SHELL ["/bin/bash", "-c"]
+ENV PATH $PATH:/opt/ros/kinetic/bin
 
 RUN apt-get update && apt-get install -y lsb-release \
     build-essential \
