@@ -1,0 +1,29 @@
+# This is an auto generated Dockerfile for ros:robot
+# generated from docker_images/create_ros_image.Dockerfile.em
+FROM yubaoliu/docker:ros-kinetic
+MAINTAINER yubaoliu89@gmail.com
+
+SHELL ["/bin/bash", "-c"]
+
+RUN apt-get update && apt-get install -y lsb-release 
+
+# config entrypoint
+RUN echo "#!/bin/bash" >> /home/entrypoint.sh && \
+    echo "echo \"This is entrypoint\"" >> /home/entrypoint.sh && \
+    echo "bash" >> /home/entrypoint.sh && \
+    chmod 755 /home/entrypoint.sh 
+
+
+CMD ["/bin/bash"]
+ENTRYPOINT ["/home/entrypoint.sh"]
+
+WORKDIR /home
+
+# clean
+RUN apt-get autoremove  &&\
+    rm -rf /var/lib/apt/lists/*
+
+
+
+
+    

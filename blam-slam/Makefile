@@ -1,6 +1,6 @@
 NAME=yubaoliu/docker
-VERSION=ros-kinetic
-CONTAINER_NAME=ros
+VERSION=blam-slam
+CONTAINER_NAME=blam-slam
 
 build:
 	docker build -t $(NAME):$(VERSION) .
