@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y \
     ros-kinetic-desktop-full  \
     python-rosinstall python-rosinstall-generator python-wstool build-essential \
     ros-kinetic-catkin python-catkin-tools \
-    ros-kinetic-geodesy ros-kinetic-pcl_ros ros-kinetic-nmea-msgs ros-kinetic-libg2o
+    ros-kinetic-geodesy ros-kinetic-pcl-ros ros-kinetic-nmea-msgs ros-kinetic-libg2o
 
 
 # config entrypoint
