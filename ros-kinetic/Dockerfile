@@ -4,7 +4,9 @@ FROM ubuntu:16.04
 MAINTAINER yubaoliu89@gmail.com
 
 SHELL ["/bin/bash", "-c"]
+
 ENV PATH $PATH:/opt/ros/kinetic/bin
+ENV PYTHONPATH $PYTHONPATH:/opt/ros/kinetic/lib/python2.7/dist-packages
 
 RUN apt-get update && apt-get install -y lsb-release \
     build-essential \
@@ -30,9 +32,9 @@ RUN apt-get update && apt-get install -y \
 # config entrypoint
 RUN echo "#!/bin/bash" >> /home/entrypoint.sh && \
     echo "source /opt/ros/kinetic/setup.bash" >> /home/entrypoint.sh && \
+    echo "source /home/catkin_ws/devel/setup.bash" >> /home/entrypoint.sh && \
     echo "bash" >> /home/entrypoint.sh && \
-    chmod 755 /home/entrypoint.sh && \
-    /bin/bash -c "source /home/entrypoint.sh"
+    chmod 755 /home/entrypoint.sh 
 
 
 # ROS Environment config
@@ -41,6 +43,8 @@ RUN rosdep init && \
     mkdir /home/catkin_ws && \
     cd /home/catkin_ws && \
     mkdir src/ && \
+    catkin_init_workspace && \
+    cd .. && \
     catkin_make 
 
 CMD ["/bin/bash"]
