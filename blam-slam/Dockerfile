@@ -1,6 +1,6 @@
 # This is an auto generated Dockerfile for ros:robot
 # generated from docker_images/create_ros_image.Dockerfile.em
-FROM yubaoliu/docker:ros-kinetic
+FROM yubaoliu/ros-kinetic
 MAINTAINER yubaoliu89@gmail.com
 
 SHELL ["/bin/bash", "-c"]

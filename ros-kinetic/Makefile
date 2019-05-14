@@ -1,5 +1,5 @@
-NAME=yubaoliu/docker
-VERSION=ros-kinetic
+NAME=yubaoliu/ros-kinetic
+VERSION=latest
 CONTAINER_NAME=ros
 
 build:

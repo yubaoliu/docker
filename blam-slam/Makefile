@@ -1,5 +1,5 @@
-NAME=yubaoliu/docker
-VERSION=blam-slam
+NAME=yubaoliu/blam-slam
+VERSION=latest
 CONTAINER_NAME=blam-slam
 
 build:
