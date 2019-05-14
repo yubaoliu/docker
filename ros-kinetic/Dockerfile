@@ -7,6 +7,7 @@ SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && apt-get install -y lsb-release \
     build-essential \
+    wget \
     git \
     vim \
     cmake \
@@ -33,15 +34,19 @@ RUN echo "#!/bin/bash" >> /home/entrypoint.sh && \
 
 
 # ROS Environment config
-RUN rosdep init && rosdep update && \
-    mkdir /home/catkin_ws && cd /home/catkin_ws \
-    && mkdir src/ && cd src/ && catkin_init_workspace
+RUN rosdep init && \
+    rosdep update && \
+    mkdir /home/catkin_ws && \
+    cd /home/catkin_ws && \
+    mkdir src/ && \
+    catkin_make 
 
 
 ENTRYPOINT ["/home/entrypoint.sh"]
 
 # clean
-RUN rm -rf /var/lib/apt/lists/*
+RUN apt-get autoremove  &&\
+    rm -rf /var/lib/apt/lists/*
 
 
 
