@@ -26,7 +26,8 @@ RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main"
 RUN apt-get update && apt-get install -y \
     ros-kinetic-desktop-full  \
     python-rosinstall python-rosinstall-generator python-wstool build-essential \
-    ros-kinetic-catkin python-catkin-tools
+    ros-kinetic-catkin python-catkin-tools \
+    ros-kinetic-geodesy ros-kinetic-pcl_ros ros-kinetic-nmea-msgs ros-kinetic-libg2o
 
 
 # config entrypoint
@@ -40,11 +41,10 @@ RUN echo "#!/bin/bash" >> /home/entrypoint.sh && \
 # ROS Environment config
 RUN rosdep init && \
     rosdep update && \
-    mkdir /home/catkin_ws && \
+    mkdir -p /home/catkin_ws/src && \
     cd /home/catkin_ws && \
-    mkdir src/ && \
     catkin_init_workspace && \
-    cd .. && \
+    cd /home/catkin_ws/src  && \
     catkin_make 
 
 CMD ["/bin/bash"]
