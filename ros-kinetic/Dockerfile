@@ -34,8 +34,7 @@ RUN apt-get update && apt-get install -y \
 
 # config entrypoint
 RUN echo "#!/bin/bash" >> /home/entrypoint.sh && \
-    echo "source /opt/ros/kinetic/setup.bash" >> /home/entrypoint.sh && \
-    echo "source /home/catkin_ws/devel/setup.bash" >> /home/entrypoint.sh && \
+    echo "echo \"This is entrypoint\"" >> /home/entrypoint.sh && \
     echo "bash" >> /home/entrypoint.sh && \
     chmod 755 /home/entrypoint.sh 
 
@@ -46,11 +45,14 @@ RUN rosdep init && \
     mkdir -p /home/catkin_ws/src && \
     cd /home/catkin_ws/src && \
     catkin_init_workspace && \
-    cd /home/catkin_ws  && \
-    catkin_make 
+    echo "source /opt/ros/kinetic/setup.bash" >> /root/.bashrc && \
+    echo "source /home/catkin_ws/devel/setup.bash" >> /root/.bashrc && \
+    source /root/.bashrc
 
 CMD ["/bin/bash"]
 ENTRYPOINT ["/home/entrypoint.sh"]
+
+WORKDIR /home
 
 # clean
 RUN apt-get autoremove  &&\
