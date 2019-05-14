@@ -10,6 +10,8 @@ ENV PYTHONPATH $PYTHONPATH:/opt/ros/kinetic/lib/python2.7/dist-packages
 
 RUN apt-get update && apt-get install -y lsb-release \
     build-essential \
+    bash-completion \
+    curl \
     wget \
     git \
     vim \
@@ -42,9 +44,9 @@ RUN echo "#!/bin/bash" >> /home/entrypoint.sh && \
 RUN rosdep init && \
     rosdep update && \
     mkdir -p /home/catkin_ws/src && \
-    cd /home/catkin_ws && \
+    cd /home/catkin_ws/src && \
     catkin_init_workspace && \
-    cd /home/catkin_ws/src  && \
+    cd /home/catkin_ws  && \
     catkin_make 
 
 CMD ["/bin/bash"]
