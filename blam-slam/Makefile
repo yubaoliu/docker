@@ -4,24 +4,24 @@ CONTAINER_NAME=blam-slam
 
 build:
 	docker build -t $(NAME):$(VERSION) .
-			
+
 restart: stop start
 
 start:
 	docker start $(VERSION)
+
 run:
 	docker run -it \
 	--net host \
 	-e DISPLAY=$$DISPLAY \
 	-v $$HOME/.Xauthority:/root/.Xauthority \
-	-v /home/yubao/data/docker-ros:/home/catkin_ws/src \
-	-v /home/yubao/data/Project/gtsam:/home/catkin_ws/src \
+	-v /home/yubao/data/share:/home/catkin_ws/src \
 	--name $(CONTAINER_NAME) \
 	$(NAME):$(VERSION)
-					
+
 contener=`docker ps -a -q`
 image=`docker images | awk '/^<none>/ { print $$3 }'`
-	
+
 clean:
 	@if [ "$(image)" != "" ] ; then \
 		docker rmi $(image); \
@@ -29,7 +29,7 @@ clean:
 	@if [ "$(contener)" != "" ] ; then \
 		docker rm $(contener); \
 	fi
-	
+
 stop:
 	docker rm -f $(CONTAINER_NAME)
 	

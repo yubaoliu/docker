@@ -5,7 +5,7 @@ MAINTAINER yubaoliu89@gmail.com
 
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get update && apt-get install -y lsb-release 
+RUN apt-get update && apt-get install -y --fix-missing --no-install-recommends 
 
 # config entrypoint
 RUN echo "#!/bin/bash" >> /home/entrypoint.sh && \
@@ -13,6 +13,11 @@ RUN echo "#!/bin/bash" >> /home/entrypoint.sh && \
     echo "bash" >> /home/entrypoint.sh && \
     chmod 755 /home/entrypoint.sh 
 
+#blam slam
+WORKDIR /home/catkin_ws/src
+RUN git clone https://github.com/erik-nelson/blam.git && \
+    cd blam && \
+    ./update
 
 CMD ["/bin/bash"]
 ENTRYPOINT ["/home/entrypoint.sh"]

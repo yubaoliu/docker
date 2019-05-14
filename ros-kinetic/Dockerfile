@@ -8,7 +8,8 @@ SHELL ["/bin/bash", "-c"]
 ENV PATH $PATH:/opt/ros/kinetic/bin
 ENV PYTHONPATH $PYTHONPATH:/opt/ros/kinetic/lib/python2.7/dist-packages
 
-RUN apt-get update && apt-get install -y lsb-release \
+RUN apt-get update && apt-get install -y  --fix-missing \
+    lsb-release \
     build-essential \
     bash-completion \
     curl \
@@ -18,7 +19,10 @@ RUN apt-get update && apt-get install -y lsb-release \
     cmake \
     gcc g++ \
     python-wstool \
-    libsuitesparse-dev
+    libsuitesparse-dev \
+    libboost-all-dev \
+    libtbb-dev \
+    libeigen3-dev
 
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' && \
    apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
@@ -47,7 +51,22 @@ RUN rosdep init && \
     catkin_init_workspace && \
     echo "source /opt/ros/kinetic/setup.bash" >> /root/.bashrc && \
     echo "source /home/catkin_ws/devel/setup.bash" >> /root/.bashrc && \
-    source /root/.bashrc
+    source /root/.bashrca && \
+    cd /home/catkin_ws  && \
+    catkin_make
+
+# GTSAM
+WORKDIR /tmp
+RUN git clone https://bitbucket.org/gtborg/gtsam.git && \
+    cd gtsam && \
+    mkdir build && \
+    cd build && \
+    cmake -DGTSAM_USE_QUATERNIONS=ON \
+          -DGTSAM_BUILD_PYTHON=ON \
+          -DGTSAM_ALLOW_DEPRECATED_SINCE_V4=OFF \
+          .. && \
+    make -j $NUM_CORES && \
+    make install
 
 CMD ["/bin/bash"]
 ENTRYPOINT ["/home/entrypoint.sh"]
