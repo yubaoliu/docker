@@ -66,7 +66,7 @@ RUN git clone https://bitbucket.org/gtborg/gtsam.git && \
           -DGTSAM_BUILD_PYTHON=ON \
           -DGTSAM_ALLOW_DEPRECATED_SINCE_V4=OFF \
           .. && \
-    make -j $NUM_CORES && \
+    make  && \
     make install
 
 CMD ["/bin/bash"]
