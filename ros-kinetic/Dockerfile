@@ -51,7 +51,7 @@ RUN rosdep init && \
     catkin_init_workspace && \
     echo "source /opt/ros/kinetic/setup.bash" >> /root/.bashrc && \
     echo "source /home/catkin_ws/devel/setup.bash" >> /root/.bashrc && \
-    source /root/.bashrca && \
+    source /root/.bashrc && \
     cd /home/catkin_ws  && \
     catkin_make
 
