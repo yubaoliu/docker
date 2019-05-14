@@ -7,6 +7,7 @@ SHELL ["/bin/bash", "-c"]
 
 ENV PATH $PATH:/opt/ros/kinetic/bin
 ENV PYTHONPATH $PYTHONPATH:/opt/ros/kinetic/lib/python2.7/dist-packages
+ENV CMAKE_PREFIX_PATH $CMAKE_PREFIX_PATH:/opt/ros/kinetic
 
 RUN apt-get update && apt-get install -y  --fix-missing \
     lsb-release \
