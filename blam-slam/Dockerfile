@@ -8,16 +8,24 @@ SHELL ["/bin/bash", "-c"]
 RUN apt-get update && apt-get install -y --fix-missing --no-install-recommends 
 
 # config entrypoint
-RUN echo "#!/bin/bash" >> /home/entrypoint.sh && \
+RUN rm -rf /home/entrypoint.sh && \ #conflict with the parent
+    echo "#!/bin/bash" >> /home/entrypoint.sh && \
     echo "echo \"This is entrypoint\"" >> /home/entrypoint.sh && \
     echo "bash" >> /home/entrypoint.sh && \
     chmod 755 /home/entrypoint.sh 
 
-#blam slam
+#ROS config
 WORKDIR /home/catkin_ws/src
-RUN git clone https://github.com/erik-nelson/blam.git && \
+RUN mkdir -p /home/catkin_ws/src && /
+    cd /home/catkin_ws && /
+    catkin_make
+
+#blam slam
+RUN cd /home/catkin_ws/src && /
+    git clone https://github.com/yubaoliu/blam.git && \
     cd blam && \
-    ./update
+    ./update && \
+    source /home/catkin_ws/devel/setup.sh
 
 CMD ["/bin/bash"]
 ENTRYPOINT ["/home/entrypoint.sh"]

@@ -1,6 +1,6 @@
 # This is an auto generated Dockerfile for ros:robot
 # generated from docker_images/create_ros_image.Dockerfile.em
-FROM ubuntu:16.04
+FROM nvidia/cuda:8.0-cudnn5-devel-ubuntu16.04
 MAINTAINER yubaoliu89@gmail.com
 
 SHELL ["/bin/bash", "-c"]
@@ -8,6 +8,7 @@ SHELL ["/bin/bash", "-c"]
 ENV PATH $PATH:/opt/ros/kinetic/bin
 ENV PYTHONPATH $PYTHONPATH:/opt/ros/kinetic/lib/python2.7/dist-packages
 ENV CMAKE_PREFIX_PATH $CMAKE_PREFIX_PATH:/opt/ros/kinetic
+ENV GIT_SSL_NO_VERIFY 1
 
 RUN apt-get update && apt-get install -y  --fix-missing \
     lsb-release \
@@ -23,7 +24,14 @@ RUN apt-get update && apt-get install -y  --fix-missing \
     libsuitesparse-dev \
     libboost-all-dev \
     libtbb-dev \
-    libeigen3-dev
+    libeigen3-dev \
+    software-properties-common
+
+#Nvidia
+RUN apt-get install -y nvidia-common && \
+    add-apt-repository -y ppa:graphics-drivers/ppa && \
+    apt-get update 
+
 
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' && \
    apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
@@ -35,13 +43,6 @@ RUN apt-get update && apt-get install -y \
     python-rosinstall python-rosinstall-generator python-wstool build-essential \
     ros-kinetic-catkin python-catkin-tools \
     ros-kinetic-geodesy ros-kinetic-pcl-ros ros-kinetic-nmea-msgs ros-kinetic-libg2o
-
-
-# config entrypoint
-RUN echo "#!/bin/bash" >> /home/entrypoint.sh && \
-    echo "echo \"This is entrypoint\"" >> /home/entrypoint.sh && \
-    echo "bash" >> /home/entrypoint.sh && \
-    chmod 755 /home/entrypoint.sh 
 
 
 # ROS Environment config
@@ -70,7 +71,6 @@ RUN git clone https://bitbucket.org/gtborg/gtsam.git && \
     make install
 
 CMD ["/bin/bash"]
-ENTRYPOINT ["/home/entrypoint.sh"]
 
 WORKDIR /home
 

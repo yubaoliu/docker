@@ -12,10 +12,13 @@ start:
 run:
 	docker run -it \
 	--net host \
-	-e DISPLAY=$$DISPLAY \
-	-v $$HOME/.Xauthority:/root/.Xauthority \
-	-v /home/yubao/data/docker-ros:/home/catkin_ws/src \
-	-v /home/yubao/data/Project/gtsam:/home/catkin_ws/src \
+	--env="DISPLAY=$DISPLAY" \
+  --env="QT_X11_NO_MITSHM=1" \
+  --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+  -env="XAUTHORITY=$XAUTH" \
+  --volume="$XAUTH:$XAUTH" \
+	-v /home/yubao/data/share/docker-ros:/home \
+	--runtime=nvidia \
 	--name $(CONTAINER_NAME) \
 	$(NAME):$(VERSION)
 					
