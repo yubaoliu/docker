@@ -17,7 +17,7 @@ run:
   --env="QT_X11_NO_MITSHM=1" \
   --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
   -env="XAUTHORITY=$XAUTH" \
-  --volume="$XAUTH:$XAUTH" \
+	-v $$HOME/.Xauthority:/root/.Xauthority \
 	-v /home/yubao/data/share/blam-slam:/home \
 	--runtime=nvidia \
 	--name $(CONTAINER_NAME) \

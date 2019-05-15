@@ -8,7 +8,7 @@ SHELL ["/bin/bash", "-c"]
 RUN apt-get update && apt-get install -y --fix-missing --no-install-recommends 
 
 # config entrypoint
-RUN rm -rf /home/entrypoint.sh && \ #conflict with the parent
+RUN rm -rf /home/entrypoint.sh && \ 
     echo "#!/bin/bash" >> /home/entrypoint.sh && \
     echo "echo \"This is entrypoint\"" >> /home/entrypoint.sh && \
     echo "bash" >> /home/entrypoint.sh && \

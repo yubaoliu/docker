@@ -58,8 +58,8 @@ RUN rosdep init && \
     catkin_make
 
 # GTSAM
-WORKDIR /tmp
-RUN git clone https://bitbucket.org/gtborg/gtsam.git && \
+RUN cd /tmp && \
+    git clone https://bitbucket.org/gtborg/gtsam.git && \
     cd gtsam && \
     mkdir build && \
     cd build && \
