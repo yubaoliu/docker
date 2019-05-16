@@ -1,48 +1,27 @@
-# This is an auto generated Dockerfile for ros:robot
-# generated from docker_images/create_ros_image.Dockerfile.em
-FROM nvidia/cuda:8.0-cudnn5-devel-ubuntu16.04
+
+FROM yubaoliu/root:cuda8
 MAINTAINER yubaoliu89@gmail.com
 
 SHELL ["/bin/bash", "-c"]
-
 ENV PATH $PATH:/opt/ros/kinetic/bin
 ENV PYTHONPATH $PYTHONPATH:/opt/ros/kinetic/lib/python2.7/dist-packages
 ENV CMAKE_PREFIX_PATH $CMAKE_PREFIX_PATH:/opt/ros/kinetic
 ENV GIT_SSL_NO_VERIFY 1
 
-RUN apt-get update && apt-get install -y  --fix-missing \
-    lsb-release \
-    build-essential \
-    bash-completion \
-    curl \
-    wget \
-    git \
-    vim \
-    cmake \
-    gcc g++ \
-    python-wstool \
-    libsuitesparse-dev \
-    libboost-all-dev \
-    libtbb-dev \
-    libeigen3-dev \
-    software-properties-common
 
-#Nvidia
-RUN apt-get install -y nvidia-common && \
-    add-apt-repository -y ppa:graphics-drivers/ppa && \
-    apt-get update 
+RUN apt-get update && apt-get install -y --fix-missing \
+    && rm -rf /var/lib/apt/lists/*
 
-
+# install ros packages
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' && \
    apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
 
-
-# install ros packages
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get -y  upgrade &&  apt-get install -y \
     ros-kinetic-desktop-full  \
-    python-rosinstall python-rosinstall-generator python-wstool build-essential \
+    python-rosinstall python-rosinstall-generator  \
     ros-kinetic-catkin python-catkin-tools \
-    ros-kinetic-geodesy ros-kinetic-pcl-ros ros-kinetic-nmea-msgs ros-kinetic-libg2o
+    ros-kinetic-geodesy ros-kinetic-pcl-ros ros-kinetic-nmea-msgs ros-kinetic-libg2o \
+    && rm -rf /var/lib/apt/lists/*
 
 
 # ROS Environment config
@@ -52,10 +31,10 @@ RUN rosdep init && \
     cd /home/catkin_ws/src && \
     catkin_init_workspace && \
     echo "source /opt/ros/kinetic/setup.bash" >> /root/.bashrc && \
-    echo "source /home/catkin_ws/devel/setup.bash" >> /root/.bashrc && \
     source /root/.bashrc && \
     cd /home/catkin_ws  && \
-    catkin_make
+    catkin_make && \
+    echo "source /home/catkin_ws/devel/setup.bash" >> /root/.bashrc
 
 # GTSAM
 RUN cd /tmp && \
@@ -68,17 +47,8 @@ RUN cd /tmp && \
           -DGTSAM_ALLOW_DEPRECATED_SINCE_V4=OFF \
           .. && \
     make  && \
-    make install
+    make install && \
+    rm -rf gtsam
 
 CMD ["/bin/bash"]
 
-WORKDIR /home
-
-# clean
-RUN apt-get autoremove  &&\
-    rm -rf /var/lib/apt/lists/*
-
-
-
-
-    
