@@ -1,18 +1,27 @@
 
-FROM nvidia/cuda:8.0-cudnn5-devel-ubuntu16.04
+FROM ubuntu:16.04
 MAINTAINER yubaoliu89@gmail.com
 
 SHELL ["/bin/bash", "-c"]
 ENV GIT_SSL_NO_VERIFY 1
 
+# setup environment
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+
 RUN apt-get update && apt-get install -y --fix-missing  \
+        dirmngr \
+        gnupg2 \
         build-essential \
         cmake \
+        cmake-qt-gui \
+        g++ \
         vim \
         git \
         wget \
         curl \
         tree \
+        doxygen \
         libatlas-base-dev \
         libboost-all-dev \
         libgflags-dev \
@@ -41,5 +50,6 @@ RUN apt-get update && apt-get install -y --fix-missing  \
         apt-get -y upgrade && \
         apt-get autoremove && \
         rm -rf /var/lib/apt/lists/*
+
 
 CMD ["/bin/bash"]

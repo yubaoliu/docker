@@ -2,13 +2,39 @@ CUDA=cuda8
 
 #ROOT
 ROOT_NAME=yubaoliu/root
-ROOT_VERSION=$(CUDA)
-ROOT_CONTAINER_NAME=root-cuda8
+ROOT_VERSION=latest
+ROOT_CONTAINER_NAME=root-ubuntu1604
+
+#ROOT-CUDA
+ROOT_CUDA_NAME=yubaoliu/root-$(CUDA)
+ROOT_CUDA_VERSION=$(CUDA)
+ROOT_CUDA_CONTAINER_NAME=root-$(CUDA)
+
+#ROS
+ROS_NAME=yubaoliu/ros-kinetic
+ROS_VERSION=latest
+ROS_CONTAINER_NAME=ros-kinetic
+
+
+build-all: build-root build-root-cuda build-ros
 
 build-root:
 	docker build -t $(ROOT_NAME):$(ROOT_VERSION) root
+build-root-cuda:
+	docker build -t $(ROOT_CUDA_NAME):$(ROOT_CUDA_VERSION) root/Dockerfile.$(CUDA)
+build-ros:
+	docker build -t $(ROS_NAME):$(ROS_VERSION) ros-kinetic
 
-tart-root:
+clean:
+	docker rmi -f yubaoliu/ros-kinetic:$(ROS_VERSION)
+	docker rmi -f yubaoliu/root:$(ROOT_VERSION)
+
+pull:
+	docker rmi -f yubaoliu/ros-kinetic:$(ROS_VERSION)
+	docker rmi -f yubaoliu/root:$(ROOT_VERSION)
+
+
+start-root:
 	docker start $(ROOT_CONTAINER_NAME)
 
 run-root:
@@ -23,6 +49,7 @@ run-root:
 
 contener=`docker ps -a -q`
 image=`docker images | awk '/^<none>/ { print $$3 }'`
+
 stop-root:
 	docker stop -f $(ROOT_CONTAINER_NAME)
 
@@ -35,53 +62,25 @@ logs-root:
 rm-root:
 	docker rm $(ROOT_CONTAINER_NAME)
 
-
-#ROS
-ROS_NAME=yubaoliu/ros-kinetic
-ROS_VERSION=$(CUDA)
-ROS_CONTAINER_NAME=ros-cuda8
-
-
-build-ros:
-	docker build -t $(ROS_NAME):$(ROS_VERSION) ros-kinetic
-
 run-ros:
 	docker run -it \
 	--net host \
 	-e DISPLAY=$$DISPLAY \
 	-v $$HOME/.Xauthority:/root/.Xauthority \
-	-v /home/yubao/data/share/docker-ros:/home \
+	-v /home/yubao/data/share/docker-ros:/home/balm \
 	--runtime=nvidia \
 	--name $(ROS_CONTAINER_NAME) \
 	$(ROS_NAME):$(ROS_VERSION)
 
-#blam-slam
-BLAM_NAME=yubaoliu/blam-slam
-BLAM_VERSION=$(CUDA)
-BLAM_CONTAINER_NAME=blam-slam
-
-
-build-blam:
-	docker build -t $(ROS_NAME):$(BLAM_VERSION) blam-slam
-
-run-ros:
+run-blam:
 	docker run -it \
 	--net host \
 	-e DISPLAY=$$DISPLAY \
 	-v $$HOME/.Xauthority:/root/.Xauthority \
-	-v /home/yubao/data/share/docker-ros:/home \
+	-v /home/yubao/data/share/blam:/home \
 	--runtime=nvidia \
-	--name $(BLAM_CONTAINER_NAME) \
-	$(BLAM_NAME):$(BLAM_VERSION)
+	--name blam-slam \
+	$(ROS_NAME):$(ROS_VERSION) 
 
-
-
-
-clean:
-	@if [ "$(image)" != "" ] ; then \
-		docker rmi $(image); \
-	fi
-	@if [ "$(contener)" != "" ] ; then \
-		docker rm $(contener); \
-	fi
-
+remove-none-images:
+	docker images|grep "none"|awk '{print $$3 }'|xargs docker rmi -f

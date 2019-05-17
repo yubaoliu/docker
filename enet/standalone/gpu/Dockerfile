@@ -1,4 +1,4 @@
-FROM yubaoliu/ros-kinetic:cuda8 
+FROM yubaoliu/root:cuda8
 MAINTAINER yubaoliu89@gmail.com
 
 ENV CAFFE_ROOT=/opt/caffe
