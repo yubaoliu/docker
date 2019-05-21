@@ -1,4 +1,5 @@
 CUDA=cuda8
+CUDANN_VERSION=cudnn6
 
 #ROOT
 ROOT_NAME=yubaoliu/root
@@ -6,7 +7,7 @@ ROOT_VERSION=latest
 ROOT_CONTAINER_NAME=root-ubuntu1604
 
 #ROOT-CUDA
-ROOT_CUDA_NAME=yubaoliu/root-$(CUDA)
+ROOT_CUDA_NAME=yubaoliu/root-cuda
 ROOT_CUDA_VERSION=$(CUDA)
 ROOT_CUDA_CONTAINER_NAME=root-$(CUDA)
 
@@ -20,8 +21,10 @@ build-all: build-root build-root-cuda build-ros
 
 build-root:
 	docker build -t $(ROOT_NAME):$(ROOT_VERSION) root
+
 build-root-cuda:
-	docker build -t $(ROOT_CUDA_NAME):$(ROOT_CUDA_VERSION) root/Dockerfile.$(CUDA)
+	nvidia-docker build -t $(ROOT_CUDA_NAME):$(ROOT_CUDA_VERSION)-$(CUDANN_VERSION)  . -f root/Dockerfile_$(CUDA)-$(CUDANN_VERSION)
+
 build-ros:
 	docker build -t $(ROS_NAME):$(ROS_VERSION) ros-kinetic
 
@@ -46,6 +49,19 @@ run-root:
 	--runtime=nvidia \
 	--name $(ROOT_CONTAINER_NAME) \
 	$(ROOT_NAME):$(ROOT_VERSION)
+
+run-cuda:
+	docker run -it \
+	--net host \
+	-e DISPLAY=$$DISPLAY \
+	-v $$HOME/.Xauthority:/root/.Xauthority \
+	-v /home/yubao/data/share/docker-ros:/home \
+	--runtime=nvidia \
+	--name $(CUDA_VERSION)$(CUDANN_VERSION) \
+	$(ROOT_CUDA_NAME):$(ROOT_CUDA_VERSION)-$(CUDANN_VERSION) \
+	bash
+
+
 
 contener=`docker ps -a -q`
 image=`docker images | awk '/^<none>/ { print $$3 }'`
