@@ -25,8 +25,23 @@ build-root:
 build-root-cuda:
 	nvidia-docker build -t $(ROOT_CUDA_NAME):$(ROOT_CUDA_VERSION)-$(CUDANN_VERSION)  . -f root/Dockerfile_$(CUDA)-$(CUDANN_VERSION)
 
-build-ros:
-	docker build -t $(ROS_NAME):$(ROS_VERSION) ros-kinetic
+build-ros-melodic:
+	nvidia-docker build -t ros-melodic -f ros/melodic/Dockerfile .
+
+run-ros-melodic:
+	docker run -it \
+	--net host \
+	-e DISPLAY=$$DISPLAY \
+	-v $$HOME/.Xauthority:/root/.Xauthority \
+	-v /home/yubao/data/share/melodic:/root/catkin_ws/src \
+	--runtime=nvidia \
+    --rm \
+	--name ros-melodic  \
+	ros-melodic
+
+
+build-ros-kinetic:
+	docker build -t $(ROS_NAME):$(ROS_VERSION) ros/kinetic
 
 clean:
 	docker rmi -f yubaoliu/ros-kinetic:$(ROS_VERSION)
