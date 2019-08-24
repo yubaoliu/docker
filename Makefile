@@ -17,13 +17,25 @@ ROS_VERSION=latest
 ROS_CONTAINER_NAME=ros-kinetic
 
 
-build-all: build-root build-root-cuda build-ros
 
 build-root:
 	docker build -t $(ROOT_NAME):$(ROOT_VERSION) root
 
 build-root-cuda:
 	nvidia-docker build -t $(ROOT_CUDA_NAME):$(ROOT_CUDA_VERSION)-$(CUDANN_VERSION)  . -f root/Dockerfile_$(CUDA)-$(CUDANN_VERSION)
+
+build-blam:
+	nvidia-docker build -t blam -f blam-slam/Dockerfile .
+
+run-blam:
+	docker run -it --rm \
+	--net host \
+	-e DISPLAY=$$DISPLAY \
+	-v $$HOME/.Xauthority:/root/.Xauthority \
+	-v /home/yubao/data/share/blam:/root/catkin_ws/src \
+	--name blam  \
+	blam
+
 
 build-ros-melodic:
 	nvidia-docker build -t ros-melodic -f ros/melodic/Dockerfile .
@@ -102,16 +114,6 @@ run-ros:
 	--runtime=nvidia \
 	--name $(ROS_CONTAINER_NAME) \
 	$(ROS_NAME):$(ROS_VERSION)
-
-run-blam:
-	docker run -it \
-	--net host \
-	-e DISPLAY=$$DISPLAY \
-	-v $$HOME/.Xauthority:/root/.Xauthority \
-	-v /home/yubao/data/share/blam:/home \
-	--runtime=nvidia \
-	--name blam-slam \
-	$(ROS_NAME):$(ROS_VERSION) 
 
 remove-none-images:
 	docker images|grep "none"|awk '{print $$3 }'|xargs docker rmi -f
