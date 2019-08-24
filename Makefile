@@ -32,7 +32,7 @@ run-blam:
 	--net host \
 	-e DISPLAY=$$DISPLAY \
 	-v $$HOME/.Xauthority:/root/.Xauthority \
-	-v /home/yubao/data/share/blam:/root/catkin_ws/src \
+	-v /home/yubao/data/share/blam:/root \
 	--name blam  \
 	blam
 

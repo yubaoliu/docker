@@ -1,4 +1,5 @@
 FROM ros:kinetic
+MAINTAINER Yubao <yubaoliu89@gmail.com>
 
 # Install common packages
 RUN apt-get update && apt-get install -y vim && \
@@ -10,10 +11,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y && apt-get inst
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
-
-RUN mkdir -p /root/catkin_ws/src
-WORKDIR /root/catkin_ws/src
-RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; catkin_init_workspace'
+WORKDIR /root
 
 # GTSAM
 RUN apt-get update && cd /tmp && \
@@ -35,16 +33,13 @@ RUN git clone https://github.com/erik-nelson/blam.git && \
 	cd blam && \
 	./update
 	
-# RUN git clone https://github.com/koide3/hdl_graph_slam.git
-#COPY . /root/catkin_ws/src/hdl_graph_slam/
 
-WORKDIR /root/catkin_ws
-RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; catkin_make'
-RUN sed -i "6i source \"/root/catkin_ws/devel/setup.bash\"" /ros_entrypoint.sh
+
+#RUN sed -i "6i source \"/root/catkin_ws/devel/setup.bash\"" /ros_entrypoint.sh
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /
+#WORKDIR /
 
-ENTRYPOINT ["/ros_entrypoint.sh"]
+#ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["bash"]
