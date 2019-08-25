@@ -1,10 +1,9 @@
-FROM  ros:indigo-robot
+FROM  osrf/ros:indigo-desktop-full
 MAINTAINER Yubao <yubaoliu89@gmail.com>
 
 RUN apt update && \
 	apt-get install -y vim && \
 	python-pip && \
-	gcc && \
 	automake && \
 	autoconf && \
 	libtool && \

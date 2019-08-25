@@ -1,4 +1,4 @@
-FROM ros:kinetic
+FROM osrf/ros:kinetic-desktop-full
 MAINTAINER Yubao <yubaoliu89@gmail.com>
 
 # Install common packages

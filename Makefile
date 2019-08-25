@@ -17,7 +17,6 @@ ROS_VERSION=latest
 ROS_CONTAINER_NAME=ros-kinetic
 
 
-
 build-root:
 	docker build -t $(ROOT_NAME):$(ROOT_VERSION) root
 
@@ -31,6 +30,7 @@ run-blam:
 	docker run -it --rm \
 	--net host \
 	-e DISPLAY=$$DISPLAY \
+    --runtime=nvidia
 	-v $$HOME/.Xauthority:/root/.Xauthority \
 	-v /home/yubao/data/share/blam:/root \
 	--name blam  \
@@ -51,6 +51,20 @@ run-ros-melodic:
 	--name ros-melodic  \
 	ros-melodic
 
+
+build-ros-indigo:
+	nvidia-docker build -t ros-indigo -f ros/indigo/Dockerfile .
+
+run-ros-indigo:
+	docker run -it \
+	--net host \
+	-e DISPLAY=$$DISPLAY \
+	-v $$HOME/.Xauthority:/root/.Xauthority \
+	-v /home/yubao/data/share/melodic:/root/catkin_ws/src \
+	--runtime=nvidia \
+    --rm \
+	--name ros-indigo  \
+	ros-indigo
 
 build-ros-kinetic:
 	docker build -t $(ROS_NAME):$(ROS_VERSION) ros/kinetic
