@@ -1,7 +1,7 @@
 FROM  ros:indigo-robot
 MAINTAINER Yubao <yubaoliu89@gmail.com>
 
-RUN apt upgrade && \
+RUN apt update && \
 	apt-get install -y vim && \
 	python-pip && \
 	gcc && \
