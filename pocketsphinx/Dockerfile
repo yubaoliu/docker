@@ -19,7 +19,7 @@ RUN apt upgrade && \
 
 	
 
-RUN apt upgrade && \
+RUN apt update && \
 	apt-get install -y 	gstreamer0.10-pocketsphinx && \
 	ros-indigo-pocketsphinx && \
 	ros-indigo-audio-common && \
