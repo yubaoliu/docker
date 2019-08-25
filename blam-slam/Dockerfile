@@ -29,7 +29,7 @@ RUN apt-get update && cd /tmp && \
     rm -rf gtsam
 
 # BLAM SLAM
-RUN git https://github.com/yubaoliu/blam.git && \
+RUN git clone https://github.com/yubaoliu/blam.git && \
 	cd blam && \
 	./update
 	
