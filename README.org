@@ -1,8 +1,0 @@
-* Build BLAM SLAM
-./build
-
-* Run
-roslaunch blam_example test_online.launch
-
-roslaunch blam_example test_offline.launch
-
