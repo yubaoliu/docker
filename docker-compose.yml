@@ -1,0 +1,22 @@
+version: '2.3'
+services:
+  ros_melodic:
+    image: yubaoliu/ros:melodic-cuda10.2-cudnn7
+    build:
+        context: melodic
+        args:
+            cuda_version: 10.2
+            cudnn_version: 7
+            ubuntu_version: 18.04
+    container_name: ros_melodic
+    command: lxterminal
+    runtime: nvidia
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        - root:/root
+
+volumes:
+    root:
