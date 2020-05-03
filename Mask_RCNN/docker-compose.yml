@@ -1,0 +1,25 @@
+version: '2.3'
+services:
+  maskrcnn:
+    image: yubaoliu/maskrcnn:ros
+    build:
+        context: .
+    container_name: MaskRCNN
+    runtime: nvidia
+    command: lxterminal
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        - ..:/root/MaskRCNN
+        - ${DATASET_DIR}:/root/Dataset
+        - MaskRCNN:/root
+    cap_add:
+        - SYS_PTRACE
+    ports:
+        - ${PORT}:8888
+    privileged: true
+
+volumes:
+    MaskRCNN:

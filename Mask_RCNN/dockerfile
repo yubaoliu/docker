@@ -1,0 +1,18 @@
+FROM yubaoliu/root:ros-cuda10.02-cudnn7-ubuntu18
+
+# coco API
+RUN pip install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI
+
+# Install dependencies
+# Newer CUDA was installed in base image, so rosdep keys of CUDA are skipped
+RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && \
+                  rosdep install --from-paths src -r -y --skip-keys=\"nvidia-cuda-dev nvidia-cuda\""
+                  
+# Build
+RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && \
+                  catkin_make -DCMAKE_BUILD_TYPE=Release"
+
+# Load ROS environment at each run
+COPY ./entrypoint.sh /root
+ENTRYPOINT ["/root/entrypoint.sh"]
+CMD ["bash"]

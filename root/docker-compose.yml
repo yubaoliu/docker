@@ -1,0 +1,23 @@
+version: '2.3'
+services:
+  ros-cuda10.02-cudnn7-ubuntu18:
+    image: yubaoliu/root:ros-cuda10.02-cudnn7-ubuntu18
+    build:
+        context: .
+        args:
+            cuda_version: 10.2
+            cudnn_version: 7
+            ubuntu_version: 18.04
+    container_name: ros-cuda-cudnn7-ubuntu18
+    command: lxterminal
+    runtime: nvidia
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        - /tmp/docker:/tmp
+        - ros-cuda10.02-cudnn7-ubuntu18:/root
+    
+volumes:
+    ros-cuda10.02-cudnn7-ubuntu18:
