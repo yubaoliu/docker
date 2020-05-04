@@ -1,8 +1,3 @@
- 
-# Install Ruby
-sudo apt-add-repository ppa:brightbox/ruby-ng
-sudo apt update && sudo apt install -f
-sudo apt install -y ruby-full npm
 
 npm install -g remark-cli
  

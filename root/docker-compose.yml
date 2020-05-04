@@ -1,7 +1,7 @@
 version: '2.3'
 services:
-  ros-cuda10.02-cudnn7-ubuntu18:
-    image: yubaoliu/root:ros-cuda10.02-cudnn7-ubuntu18
+  ros-cuda10.2-cudnn7-ubuntu18:
+    image: yubaoliu/root:ros-cuda10.2-cudnn7-ubuntu18
     build:
         context: .
         args:
@@ -17,7 +17,7 @@ services:
     volumes:
         - /tmp/.X11-unix:/tmp/.X11-unix:rw
         - /tmp/docker:/tmp
-        - ros-cuda10.02-cudnn7-ubuntu18:/root
+        - ros-cuda10.2-cudnn7-ubuntu18:/root
     
 volumes:
-    ros-cuda10.02-cudnn7-ubuntu18:
+    ros-cuda10.2-cudnn7-ubuntu18:

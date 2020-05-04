@@ -4,6 +4,7 @@ ARG cudnn_version=7
 ARG ubuntu_version=16.04
 
 FROM nvidia/cuda:${cuda_version}-cudnn${cudnn_version}-devel-ubuntu${ubuntu_version}
+#FROM ubuntu:18.04
 
 # base image
 MAINTAINER yubaoliu89@gmail.com
@@ -14,7 +15,7 @@ ENV LC_ALL C.UTF-8
 
 # Setup timezone
 RUN echo 'Etc/UTC' > /etc/timezone && \
-    rm /etc/localtime && \
+    rm -f /etc/localtime && \
     ln -s /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     apt-get update && apt-get install -y tzdata
 
@@ -44,17 +45,60 @@ RUN apt-get update && \
     zsh \
     vim-gtk \ 
     software-properties-common \
-    snapd
-   
+    snapd \
+    libgdbm-dev \
+    libssl-dev \
+    libreadline-dev \
+    zlib1g-dev \
+    autoconf \
+    bison \
+    build-essential \
+    libyaml-dev \
+    libreadline-dev \
+    libncurses5-dev \
+    libffi-dev \
+    dirmngr \
+    gnupg2
+
+# Install rbenv
+RUN git clone https://github.com/rbenv/rbenv.git ~/.rbenv && \
+    echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc && \
+    echo 'eval "$(rbenv init -)"' >> ~/.bashrc
+
+ENV PATH /root/.rbenv/shims:/root/.rbenv/bin:$PATH
+
+# Install ruby-build & ruby
+RUN git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build && \
+    ~/.rbenv/bin/rbenv install 2.6.6 && \
+    ~/.rbenv/bin/rbenv global 2.6.6
+
+# Initiarize ruby encording
+ENV RUBYOPT -EUTF-8
+
+# Install bundler
+RUN ~/.rbenv/bin/rbenv exec gem install bundler
+
 # upgrade Ruby before other tasks
 # Remove old version firstly
 # Install Ruby on Ubuntu with Snap
 # https://stackify.com/install-ruby-on-ubuntu-everything-you-need-to-get-going/
-RUN apt-get update && \
-    apt remove -y ruby && \
-    apt autoremove -y && \
-    snap install ruby --classic
+# Install rbenv and ruby-build
+# ENV PATH ~/.rbenv/bin:$PATH
+# RUN apt-get update && \
+#     apt remove -y ruby && \
+#     apt autoremove -y && \
+#     rm ~/.rbenv -rf && \
+#     git clone https://github.com/sstephenson/rbenv.git ~/.rbenv && \
+#     git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build && \
+#     ~/.rbenv/plugins/ruby-build/install.sh && \
+#     echo 'eval "$(rbenv init -)"' >> /etc/profile.d/rbenv.sh  && \
+#     echo 'eval "$(rbenv init -)"' >> .bashrc && \
+#     ~/.rbenv/bin/rbenv install 2.6.6 && \
+#     ~/.rbenv/bin/rbenv global 2.6.6 && \
+#     apt-get install -y rubygems npm 
+ 
 
+#ENV PATH /root/.rbenv/bin:$PATH
 
 # Python
 RUN apt-get update && \
@@ -64,8 +108,6 @@ RUN apt-get update && \
 #update pip 
 RUN curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
 
-# Install packages to add ROS repository
-RUN apt-get install -y dirmngr gnupg2
 # Add ROS repository
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
 # Keys for ROS repository
@@ -120,4 +162,5 @@ CMD ["bash"]
 # utility: required for using nvidia-smi and NVML.
 # video: required for using the Video Codec SDK. Required by ZED SDK.
 ENV NVIDIA_DRIVER_CAPABILITIES compute,display,graphics,utility,video
+
 
