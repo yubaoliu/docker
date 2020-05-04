@@ -42,16 +42,26 @@ RUN apt-get update && \
     autotools-dev \
     automake \
     zsh \
-    vim-gtk  #vim clipboard 
+    vim-gtk \ 
+    software-properties-common \
+    snapd
    
+# upgrade Ruby before other tasks
+# Remove old version firstly
+# Install Ruby on Ubuntu with Snap
+# https://stackify.com/install-ruby-on-ubuntu-everything-you-need-to-get-going/
+RUN apt-get update && \
+    apt remove -y ruby && \
+    apt autoremove -y && \
+    snap install ruby --classic
+
+
 # Python
 RUN apt-get update && \
     apt-get install -y python3-pip \
     python3-dev
  
-COPY ./userconfig.sh /root/userconfig.sh
-
-#update pip
+#update pip 
 RUN curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
 
 # Install packages to add ROS repository
@@ -69,7 +79,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 RUN rosdep init
 RUN rosdep update
 # Install ROS-Base packages
-RUN apt-get update && apt-get install -y ros-melodic-desktop-full
+RUN apt-get update && apt install -f && apt-get install -y ros-melodic-desktop-full
 
 ### Create catkin workspace ###
 RUN mkdir -p /root/catkin_ws/src
@@ -90,6 +100,10 @@ COPY requirements.txt /root/requirements.txt
 RUN  pip3 install --force-reinstall -r /root/requirements.txt
 
 WORKDIR /root
+
+# Self defined script
+COPY ./userconfig.sh /root/userconfig.sh
+# RUN chmod 777 /root/userconfig.sh 
 
 # Load ROS environment at each run
 COPY ./entrypoint.sh /root/entrypoint.sh

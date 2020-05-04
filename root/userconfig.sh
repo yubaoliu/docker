@@ -1,13 +1,14 @@
  
 # Install Ruby
-RUN apt-add-repository ppa:brightbox/ruby-ng && \
-    apt install ruby2.6 ruby2.6-dev npm
+sudo apt-add-repository ppa:brightbox/ruby-ng
+sudo apt update && sudo apt install -f
+sudo apt install -y ruby-full npm
 
 npm install -g remark-cli
  
-echo "on-my-zsh"
-sudo apt install zsh
-sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+# echo "on-my-zsh"
+# sudo apt install zsh
+# sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 # Config editor
 git clone https://github.com/yubaoliu/dotfiles.gi://github.com/yubaoliu/dotfiles.git  ~/dotfiles
