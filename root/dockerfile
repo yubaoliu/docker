@@ -22,12 +22,11 @@ RUN echo 'Etc/UTC' > /etc/timezone && \
 # Install tools for development
 RUN apt-get update && \
     apt-get install -y vim \
+    software-properties-common \
     sudo \
     byobu \
     gdb \
     htop \
-    lxterminal \
-    tmux \
     wget \
     git \
     openssh-server \
@@ -36,16 +35,12 @@ RUN apt-get update && \
     unzip \
     g++ \
     graphviz \
-    trash-cli \
     libevent-dev \
     bison \
     byacc \
     autotools-dev \
     automake \
     zsh \
-    vim-gtk \ 
-    software-properties-common \
-    snapd \
     libgdbm-dev \
     libssl-dev \
     libreadline-dev \
@@ -54,14 +49,23 @@ RUN apt-get update && \
     bison \
     build-essential \
     libyaml-dev \
-    libreadline-dev \
-    libncurses5-dev \
-    libffi-dev \
     dirmngr \
-    gnupg2
+    gnupg \
+    git \
+    build-essential \
+    libffi-dev \
+    libncurses5-dev \
+    libssl-dev \
+    libreadline-dev \
+    zlib1g-dev && \
+    apt install -f && \
+    apt upgrade -y
 
 # Install rbenv
-RUN git clone https://github.com/rbenv/rbenv.git ~/.rbenv && \
+RUN apt autoremove -y ruby*  && \
+	apt autoremove && \
+	apt update && \
+	git clone https://github.com/rbenv/rbenv.git ~/.rbenv && \
     echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc && \
     echo 'eval "$(rbenv init -)"' >> ~/.bashrc
 
@@ -112,16 +116,21 @@ RUN curl -kL https://bootstrap.pypa.io/get-pip.py | python3
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
 # Keys for ROS repository
 RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+
+# Install ROS-Base packages
+RUN apt-get update && apt install -f && apt-get install -y ros-melodic-desktop-full
+
+# Set up rosdep
+RUN rosdep init
+RUN rosdep update
+
 # Install ROS bootstrap tools
 RUN apt-get update && apt-get install --no-install-recommends -y \
     python-rosdep \
     python-rosinstall \
-    python-vcstools
-# Set up rosdep
-RUN rosdep init
-RUN rosdep update
-# Install ROS-Base packages
-RUN apt-get update && apt install -f && apt-get install -y ros-melodic-desktop-full
+    python-vcstools \
+    python-rosinstall-generator \
+    python-wstool
 
 ### Create catkin workspace ###
 RUN mkdir -p /root/catkin_ws/src
@@ -146,6 +155,19 @@ WORKDIR /root
 # Self defined script
 COPY ./userconfig.sh /root/userconfig.sh
 # RUN chmod 777 /root/userconfig.sh 
+
+# Finally install some helpful tools
+RUN apt-get update && \
+    apt-get install -y vim \
+    vim-gtk \ 
+    tmux \
+    trash-cli \
+    lxterminal && \
+	gem install --user-install tmuxinator && \
+	wget https://raw.githubusercontent.com/tmuxinator/tmuxinator/master/completion/tmuxinator.zsh -O /usr/local/share/zsh/site-functions/_tmuxinator && \
+    apt install -f && \
+    apt upgrade -y
+
 
 # Load ROS environment at each run
 COPY ./entrypoint.sh /root/entrypoint.sh
