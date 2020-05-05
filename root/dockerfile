@@ -21,33 +21,28 @@ RUN echo 'Etc/UTC' > /etc/timezone && \
 
 # Install tools for development
 RUN apt-get update && \
-    apt-get install -y vim \
-    software-properties-common \
+    apt-get install -y software-properties-common \
     sudo \
     byobu \
     gdb \
     htop \
     wget \
     git \
-    openssh-server \
     curl \
     zip \
     unzip \
     g++ \
-    graphviz \
     libevent-dev \
     bison \
     byacc \
     autotools-dev \
     automake \
-    zsh \
     libgdbm-dev \
     libssl-dev \
     libreadline-dev \
     zlib1g-dev \
     autoconf \
     bison \
-    build-essential \
     libyaml-dev \
     dirmngr \
     gnupg \
@@ -58,8 +53,7 @@ RUN apt-get update && \
     libssl-dev \
     libreadline-dev \
     zlib1g-dev && \
-    apt install -f && \
-    apt upgrade -y
+    apt install -f
 
 # Install rbenv
 RUN apt autoremove -y ruby*  && \
@@ -73,8 +67,8 @@ ENV PATH /root/.rbenv/shims:/root/.rbenv/bin:$PATH
 
 # Install ruby-build & ruby
 RUN git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build && \
-    ~/.rbenv/bin/rbenv install 2.6.6 && \
-    ~/.rbenv/bin/rbenv global 2.6.6
+    ~/.rbenv/bin/rbenv install 2.6.0 && \
+    ~/.rbenv/bin/rbenv global 2.6.0
 
 # Initiarize ruby encording
 ENV RUBYOPT -EUTF-8
@@ -103,15 +97,7 @@ RUN ~/.rbenv/bin/rbenv exec gem install bundler
  
 
 #ENV PATH /root/.rbenv/bin:$PATH
-
-# Python
-RUN apt-get update && \
-    apt-get install -y python3-pip \
-    python3-dev
- 
-#update pip 
-RUN curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
-
+#
 # Add ROS repository
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
 # Keys for ROS repository
@@ -120,10 +106,6 @@ RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E
 # Install ROS-Base packages
 RUN apt-get update && apt install -f && apt-get install -y ros-melodic-desktop-full
 
-# Set up rosdep
-RUN rosdep init
-RUN rosdep update
-
 # Install ROS bootstrap tools
 RUN apt-get update && apt-get install --no-install-recommends -y \
     python-rosdep \
@@ -131,6 +113,10 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     python-vcstools \
     python-rosinstall-generator \
     python-wstool
+
+# Set up rosdep
+RUN rosdep init
+RUN rosdep update
 
 ### Create catkin workspace ###
 RUN mkdir -p /root/catkin_ws/src
@@ -146,36 +132,46 @@ RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
 RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && \
                   catkin_make -DCMAKE_BUILD_TYPE=Release"
 
-# Install mask rcnn dependencies
-COPY requirements.txt /root/requirements.txt
-RUN  pip3 install --force-reinstall -r /root/requirements.txt
-
-WORKDIR /root
-
-# Self defined script
-COPY ./userconfig.sh /root/userconfig.sh
-# RUN chmod 777 /root/userconfig.sh 
+# Python
+RUN apt-get update && \
+    apt-get install -y python3-pip \
+    python3-dev
+ 
+#update pip 
+RUN curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
 
 # Finally install some helpful tools
 RUN apt-get update && \
     apt-get install -y vim \
     vim-gtk \ 
+    openssh-server \
     tmux \
+    graphviz \
     trash-cli \
+    zsh \
     lxterminal && \
-	gem install --user-install tmuxinator && \
-	wget https://raw.githubusercontent.com/tmuxinator/tmuxinator/master/completion/tmuxinator.zsh -O /usr/local/share/zsh/site-functions/_tmuxinator && \
-    apt install -f && \
-    apt upgrade -y
+    gem install --user-install tmuxinator && \
+    apt install -f
+
+
+# Install pytho  dependencies
+COPY ./requirements.txt /root/
+RUN  pip3 install --force-reinstall -r /root/requirements.txt
+
+
+# Self defined script
+COPY ./userconfig.sh /root/
+# RUN chmod 777 /root/userconfig.sh 
 
 
 # Load ROS environment at each run
-COPY ./entrypoint.sh /root/entrypoint.sh
-RUN chmod 777 /root/entrypoint.sh
-ENTRYPOINT ["/root/entrypoint.sh"]
+COPY ./entrypoint.sh /root/
+# RUN chmod 777 /root/entrypoint.sh
+# ENTRYPOINT ["/root/entrypoint.sh"]
 
 CMD ["bash"]
 
+WORKDIR /root
 
 # From https://github.com/NVIDIA/nvidia-container-runtime/blob/master/README.md
 # compute: required for CUDA and OpenCL applications.
