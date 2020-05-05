@@ -1,9 +1,10 @@
 # versiion
-ARG cuda_version=9.0
+ARG cuda_version=10.2
 ARG cudnn_version=7
-ARG ubuntu_version=16.04
+# ARG ubuntu_version=18.04
 
-FROM nvidia/cuda:${cuda_version}-cudnn${cudnn_version}-devel-ubuntu${ubuntu_version}
+# FROM nvidia/cuda:${cuda_version}-cudnn${cudnn_version}-devel-ubuntu${ubuntu_version}
+FROM nvidia/cuda:${cuda_version}-cudnn${cudnn_version}-devel-ubuntu18.04
 #FROM ubuntu:18.04
 
 # base image
@@ -164,9 +165,9 @@ COPY ./userconfig.sh /root/
 
 
 # Load ROS environment at each run
-COPY ./entrypoint.sh /root/
-# RUN chmod 777 /root/entrypoint.sh
-# ENTRYPOINT ["/root/entrypoint.sh"]
+COPY ./entrypoint.sh /
+RUN /bin/bash -c "chmod 777 /entrypoint.sh"
+ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["bash"]
 
