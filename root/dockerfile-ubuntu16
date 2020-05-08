@@ -1,11 +1,11 @@
 # versiion
 ARG cuda_version=10.2
 ARG cudnn_version=7
-ARG ubuntu_version=18.04
+ARG ubuntu_version=16.04
 
 FROM nvidia/cuda:${cuda_version}-cudnn${cudnn_version}-devel-ubuntu${ubuntu_version}
-# FROM nvidia/cuda:${cuda_version}-cudnn${cudnn_version}-devel-ubuntu18.04
-#FROM ubuntu:18.04
+# FROM nvidia/cuda:${cuda_version}-cudnn${cudnn_version}-devel-ubuntu16.04
+#FROM ubuntu:16.04
 
 # base image
 MAINTAINER yubaoliu89@gmail.com
@@ -65,6 +65,7 @@ RUN apt autoremove -y ruby*  && \
     echo 'eval "$(rbenv init -)"' >> ~/.bashrc
 
 ENV PATH /root/.rbenv/shims:/root/.rbenv/bin:$PATH
+#ENV PATH /root/.rbenv/bin:$PATH
 
 # Install ruby-build & ruby
 RUN git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build && \
@@ -77,34 +78,13 @@ ENV RUBYOPT -EUTF-8
 # Install bundler
 RUN ~/.rbenv/bin/rbenv exec gem install bundler
 
-# upgrade Ruby before other tasks
-# Remove old version firstly
-# Install Ruby on Ubuntu with Snap
-# https://stackify.com/install-ruby-on-ubuntu-everything-you-need-to-get-going/
-# Install rbenv and ruby-build
-# ENV PATH ~/.rbenv/bin:$PATH
-# RUN apt-get update && \
-#     apt remove -y ruby && \
-#     apt autoremove -y && \
-#     rm ~/.rbenv -rf && \
-#     git clone https://github.com/sstephenson/rbenv.git ~/.rbenv && \
-#     git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build && \
-#     ~/.rbenv/plugins/ruby-build/install.sh && \
-#     echo 'eval "$(rbenv init -)"' >> /etc/profile.d/rbenv.sh  && \
-#     echo 'eval "$(rbenv init -)"' >> .bashrc && \
-#     ~/.rbenv/bin/rbenv install 2.6.6 && \
-#     ~/.rbenv/bin/rbenv global 2.6.6 && \
-#     apt-get install -y rubygems npm 
- 
 
-#ENV PATH /root/.rbenv/bin:$PATH
-#
 # Add ROS repository
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' && \
 # Keys for ROS repository
     apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 && \
 # Install ROS-Base packages
-    apt-get update && apt install -f && apt-get install -y ros-melodic-desktop-full
+    apt-get update && apt install -f && apt-get install -y ros-kinetic-desktop-full
 
 # Install ROS bootstrap tools
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -121,15 +101,15 @@ RUN rosdep update
 ### Create catkin workspace ###
 RUN mkdir -p /root/catkin_ws/src
 WORKDIR /root/catkin_ws
-RUN bash -c "source /opt/ros/melodic/setup.bash && \
+RUN bash -c "source /opt/ros/kinetic/setup.bash && \
              catkin_make -DCMAKE_BUILD_TYPE=Release"
 
 # Load ROS environment at docker exec bash
-RUN echo "source /opt/ros/melodic/setup.bash" >> /root/.bashrc
+RUN echo "source /opt/ros/kinetic/setup.bash" >> /root/.bashrc
 RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
                   
 # Build
-RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && \
+RUN /bin/bash -c "source /opt/ros/kinetic/setup.bash && \
                   catkin_make -DCMAKE_BUILD_TYPE=Release"
 
 # Python
@@ -151,6 +131,9 @@ RUN apt-get update && \
     zsh \
     iputils-ping \
     net-tools \
+    libcanberra-gtk-module \
+    libcanberra-gtk3-module \
+    xterm \
     lxterminal && \
     gem install --user-install tmuxinator && \
     apt install -f
@@ -165,11 +148,12 @@ RUN  pip3 install --force-reinstall -r /root/requirements.txt
 COPY ./userconfig.sh /root/
 # RUN chmod 777 /root/userconfig.sh 
 
+# RUN rm -rf /var/cache/lightdm
 
 # Load ROS environment at each run
-COPY ./entrypoint.sh /
-RUN /bin/bash -c "chmod 777 /entrypoint.sh"
-ENTRYPOINT ["/entrypoint.sh"]
+COPY ./entrypoint-kinetic.sh /
+RUN /bin/bash -c "chmod 777 /entrypoint-kinetic.sh"
+ENTRYPOINT ["/entrypoint-kinetic.sh"]
 
 CMD ["bash"]
 

@@ -1,26 +1,22 @@
 version: '2.3'
 services:
-  maskrcnn:
-    image: yubaoliu/maskrcnn:ros
+  rgbdslam:
+    image: yubaoliu/rgbdslam:latest
     build:
         context: .
-    container_name: MaskRCNN
+    container_name: rgbdslam
+    stdin_open: true
+    tty: true
+    # command: bash
     runtime: nvidia
-    command: lxterminal
     environment:
         - DISPLAY
         - QT_X11_NO_MITSHM=1
     volumes:
         - /tmp/.X11-unix:/tmp/.X11-unix:rw
-        - ..:/root/MaskRCNN
         - ${DATASET_DIR}:/root/Dataset
-        - root:/root
+        - /tmp/rgbdslam:/root
     cap_add:
         - SYS_PTRACE
-    ports:
-        - ${PORT}:8888
     privileged: true
-    entrypoint: /enrypoint.sh
 
-volumes:
-    root:

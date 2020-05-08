@@ -1,0 +1,24 @@
+version: '2'
+
+services:
+  ros-master:
+    image: ros:kinetic-ros-core
+    command: roscore
+    network_mode: host
+    restart: always
+
+  talker:
+    image: ros:kinetic-ros-core
+    depends_on:
+      - ros-master
+    command: rostopic pub /chatter std_msgs/String "hello" -r 1
+    network_mode: host
+    restart: always
+
+  listener:
+    image: ros:kinetic-ros-core
+    depends_on:
+      - ros-master
+    command: rostopic echo /chatter
+    network_mode: host
+    restart: always

@@ -1,0 +1,39 @@
+version: '2'
+
+networks:
+  ros:
+    driver: bridge
+
+services:
+  ros-master:
+    image: ros:kinetic-ros-core
+    ports:
+      - 11311:11311
+    command: roscore
+    networks:
+      - ros
+    restart: always
+
+  talker:
+    image: ros:kinetic-ros-core
+    depends_on:
+      - ros-master
+    environment:
+      - "ROS_MASTER_URI=http://ros-master:11311"
+      - "ROS_HOSTNAME=talker"
+    command: rostopic pub /chatter std_msgs/String "hello\r\n" -r 1
+    networks:
+      - ros
+    restart: always
+
+  listener:
+    image: ros:kinetic-ros-core
+    depends_on:
+      - ros-master
+    environment:
+      - "ROS_MASTER_URI=http://ros-master:11311"
+      - "ROS_HOSTNAME=listener"
+    command: rostopic echo /chatter
+    networks:
+      - ros
+    restart: always

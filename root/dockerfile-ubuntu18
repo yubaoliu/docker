@@ -100,7 +100,7 @@ RUN ~/.rbenv/bin/rbenv exec gem install bundler
 #ENV PATH /root/.rbenv/bin:$PATH
 #
 # Add ROS repository
-RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' && \
+RUN sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' && \
 # Keys for ROS repository
     apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 && \
 # Install ROS-Base packages
@@ -121,15 +121,15 @@ RUN rosdep update
 ### Create catkin workspace ###
 RUN mkdir -p /root/catkin_ws/src
 WORKDIR /root/catkin_ws
-RUN bash -c "source /opt/ros/melodic/setup.bash && \
+RUN bash -c "source /opt/ros/kinetic/setup.bash && \
              catkin_make -DCMAKE_BUILD_TYPE=Release"
 
 # Load ROS environment at docker exec bash
-RUN echo "source /opt/ros/melodic/setup.bash" >> /root/.bashrc
+RUN echo "source /opt/ros/kinetic/setup.bash" >> /root/.bashrc
 RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
                   
 # Build
-RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && \
+RUN /bin/bash -c "source /opt/ros/kinetic/setup.bash && \
                   catkin_make -DCMAKE_BUILD_TYPE=Release"
 
 # Python
@@ -151,6 +151,7 @@ RUN apt-get update && \
     zsh \
     iputils-ping \
     net-tools \
+    xterm \
     lxterminal && \
     gem install --user-install tmuxinator && \
     apt install -f
@@ -167,9 +168,9 @@ COPY ./userconfig.sh /root/
 
 
 # Load ROS environment at each run
-COPY ./entrypoint.sh /
-RUN /bin/bash -c "chmod 777 /entrypoint.sh"
-ENTRYPOINT ["/entrypoint.sh"]
+COPY ./entrypoint-melodic.sh /
+RUN /bin/bash -c "chmod 777 /entrypoint-melodic.sh"
+ENTRYPOINT ["/entrypoint-melodic.sh"]
 
 CMD ["bash"]
 

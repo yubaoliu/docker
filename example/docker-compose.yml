@@ -1,0 +1,5 @@
+version: '2'
+services:
+  mypy:
+    image: python:latest
+    tty: true

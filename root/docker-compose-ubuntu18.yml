@@ -6,6 +6,7 @@ services:
         - 11311:11311
     build:
         context: .
+        dockerfile: dockerfile-ubuntu18
         args:
             cuda_version: 10.2
             cudnn_version: 7

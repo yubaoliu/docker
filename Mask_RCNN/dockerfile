@@ -7,6 +7,11 @@ RUN pip install git+https://github.com/philferriere/cocoapi.git#subdirectory=Pyt
 COPY requirements.txt /root/requirements.txt
 RUN  pip3 install --force-reinstall -r /root/requirements.txt
 
+# Install mask rcnn
+RUN git clone https://github.com/yubaoliu/Mask_RCNN.git \
+    && cd Mask_RCNN \
+    && python setup.py install
+
 # # Install dependencies
 # # Newer CUDA was installed in base image, so rosdep keys of CUDA are skipped
 # RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && \
@@ -17,6 +22,6 @@ RUN  pip3 install --force-reinstall -r /root/requirements.txt
 #                   catkin_make -DCMAKE_BUILD_TYPE=Release"
 # 
 # # Load ROS environment at each run
-COPY ./entrypoint.sh /root
-ENTRYPOINT ["/root/entrypoint.sh"]
+COPY ./entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash"]
