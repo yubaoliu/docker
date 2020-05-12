@@ -11,27 +11,8 @@ services:
             cuda_version: 10.2
             cudnn_version: 7
             ubuntu_version: 18.04
-    container_name: ros_master
-    command: roscore
     volumes:
-        - tmproot:/root
-
-  ros-cuda10.2-cudnn7-ubuntu18:
-    image: yubaoliu/root:ros-cuda10.2-cudnn7-ubuntu18
-    depends_on:
-        - ros_master
-    container_name: ros-cuda-cudnn7-ubuntu18
-    command: lxterminal
-    runtime: nvidia
-    environment:
-        - DISPLAY
-        - QT_X11_NO_MITSHM=1
-        - ROS_HOSTNAME=ros-cuda-cudnn7-ubuntu18
-        - ROS_MASTER_URI=http://ros_master:11311
-    volumes:
-        - /tmp/.X11-unix:/tmp/.X11-unix:rw
-        - ..:/root/data
-        - tmproot:/root
+        - root:/root
 
 volumes:
-    tmproot:
+    root:

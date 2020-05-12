@@ -1,0 +1,26 @@
+version: '2.3'
+services:
+  detectslam:
+    image: yubaoliu/detectslam:latest
+    build:
+        context: .
+    container_name: detectslam
+    stdin_open: true
+    tty: true
+    # command: bash
+    runtime: nvidia
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        - ${DATASET_DIR}:/root/Dataset
+        - detectslam:/root
+    cap_add:
+        - SYS_PTRACE
+    privileged: true
+
+volumes:
+    detectslam:
+
+

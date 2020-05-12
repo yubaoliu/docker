@@ -121,15 +121,15 @@ RUN rosdep update
 ### Create catkin workspace ###
 RUN mkdir -p /root/catkin_ws/src
 WORKDIR /root/catkin_ws
-RUN bash -c "source /opt/ros/kinetic/setup.bash && \
+RUN bash -c "source /opt/ros/melodic/setup.bash && \
              catkin_make -DCMAKE_BUILD_TYPE=Release"
 
 # Load ROS environment at docker exec bash
-RUN echo "source /opt/ros/kinetic/setup.bash" >> /root/.bashrc
+RUN echo "source /opt/ros/melodic/setup.bash" >> /root/.bashrc
 RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
                   
 # Build
-RUN /bin/bash -c "source /opt/ros/kinetic/setup.bash && \
+RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && \
                   catkin_make -DCMAKE_BUILD_TYPE=Release"
 
 # Python
@@ -151,9 +151,10 @@ RUN apt-get update && \
     zsh \
     iputils-ping \
     net-tools \
+	tree \
     xterm \
     lxterminal && \
-    gem install --user-install tmuxinator && \
+    gem install --user-install tmuxinator bundler && \
     apt install -f
 
 
@@ -164,8 +165,17 @@ RUN  pip3 install --force-reinstall -r /root/requirements.txt
 
 # Self defined script
 COPY ./userconfig.sh /root/
-# RUN chmod 777 /root/userconfig.sh 
+RUN chmod 777 /root/userconfig.sh  && \
+    /bin/bash -c "/root/userconfig.sh"
 
+# Config editor
+RUN rm ~/dotfiles -rf && \ 
+    git clone https://github.com/yubaoliu/dotfiles.git  ~/dotfiles && \
+    cd ~/ && \
+    rm -rf ~/.vimrc && \
+    rm -rf ~/.tmux.conf && \
+    ln -s ~/dotfiles/.vimrc && \
+    ln -s ~/dotfiles/.tmux.conf
 
 # Load ROS environment at each run
 COPY ./entrypoint-melodic.sh /

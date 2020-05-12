@@ -1,0 +1,46 @@
+FROM yubaoliu/root:ros-cuda10.2-cudnn7-ubuntu18
+
+RUN apt update && \
+	apt install -f && \
+	apt install -y  libglew-dev \
+	libxkbcommon-dev
+
+WORKDIR /root
+
+# Build SLAM
+RUN git clone https://github.com/yubaoliu/detect-slam.git && \
+    cd detect-slam && \
+	./build.sh 
+
+# Build ROS version
+ENV ROS_PACKAGE_PATH ${ROS_PACKAGE_PATH}:/root/detect-slam/Examples/ROS 
+
+RUN cd /root/detect-slam && \
+	./build_ros.sh
+    
+RUN git clone https://github.com/stevenlovegrove/Pangolin.git \
+    && cd Pangolin \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make -j3 \
+    && make install
+
+COPY ./entrypoint.sh /
+RUN chmod 777 /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["bash"]
+
+# # Install dependencies
+# # Newer CUDA was installed in base image, so rosdep keys of CUDA are skipped
+# RUN /bin/bash -c "source /opt/ros/kinetic/setup.bash && \
+#                   rosdep install --from-paths src -r -y --skip-keys=\"nvidia-cuda-dev nvidia-cuda\""
+#                   
+# # Build
+# RUN /bin/bash -c "source /opt/ros/kinetic/setup.bash && \
+#                   catkin_make -DCMAKE_BUILD_TYPE=Release"
+# 
+# # Load ROS environment at each run
+
+

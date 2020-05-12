@@ -133,9 +133,10 @@ RUN apt-get update && \
     net-tools \
     libcanberra-gtk-module \
     libcanberra-gtk3-module \
+    tree \
     xterm \
     lxterminal && \
-    gem install --user-install tmuxinator && \
+    gem install --user-install tmuxinator bundler && \
     apt install -f
 
 
@@ -143,10 +144,20 @@ RUN apt-get update && \
 COPY ./requirements.txt /root/
 RUN  pip3 install --force-reinstall -r /root/requirements.txt
 
+# Config editor
+RUN rm ~/dotfiles -rf && \ 
+    git clone https://github.com/yubaoliu/dotfiles.git  ~/dotfiles && \
+    cd ~/ && \
+    rm -rf ~/.vimrc && \
+    rm -rf ~/.tmux.conf && \
+    ln -s ~/dotfiles/.vimrc && \
+    ln -s ~/dotfiles/.tmux.conf
+
 
 # Self defined script
 COPY ./userconfig.sh /root/
-# RUN chmod 777 /root/userconfig.sh 
+RUN chmod 777 /root/userconfig.sh  && \
+    /bin/bash -c "/root/userconfig.sh"
 
 # RUN rm -rf /var/cache/lightdm
 
