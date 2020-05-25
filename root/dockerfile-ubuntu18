@@ -57,19 +57,19 @@ RUN apt-get update && \
     apt install -f
 
 # Install rbenv
-RUN apt autoremove -y ruby*  && \
-	apt autoremove && \
-	apt update && \
-	git clone https://github.com/rbenv/rbenv.git ~/.rbenv && \
-    echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc && \
-    echo 'eval "$(rbenv init -)"' >> ~/.bashrc
+RUN apt autoremove -y ruby*  \
+    && apt autoremove  \
+    && apt update  \
+    && git clone https://github.com/rbenv/rbenv.git ~/.rbenv \
+    && echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc  \
+    && echo 'eval "$(rbenv init -)"' >> ~/.bashrc
 
 ENV PATH /root/.rbenv/shims:/root/.rbenv/bin:$PATH
 
 # Install ruby-build & ruby
-RUN git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build && \
-    ~/.rbenv/bin/rbenv install 2.6.0 && \
-    ~/.rbenv/bin/rbenv global 2.6.0
+RUN git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build  \
+    && ~/.rbenv/bin/rbenv install 2.6.0  \
+    && ~/.rbenv/bin/rbenv global 2.6.0
 
 # Initiarize ruby encording
 ENV RUBYOPT -EUTF-8
@@ -129,21 +129,25 @@ RUN echo "source /opt/ros/melodic/setup.bash" >> /root/.bashrc
 RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
                   
 # Build
-RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && \
-                  catkin_make -DCMAKE_BUILD_TYPE=Release"
+# RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && \
+                  # catkin_make -DCMAKE_BUILD_TYPE=Release"
 
 # Python
-RUN apt-get update && \
-    apt-get install -y python3-pip \
-    python3-dev
+RUN apt-get update  \
+    && apt-get install -y python-dev \
+    python-pip \
+    python3-dev \
+    python3-pip 
  
 #update pip 
-RUN curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
+RUN curl -kL https://bootstrap.pypa.io/get-pip.py | python3 \
+    && curl -kL https://bootstrap.pypa.io/get-pip.py | python
 
 # Finally install some helpful tools
 RUN apt-get update && \
     apt-get install -y vim \
     vim-gtk \ 
+    xclip \
     openssh-server \
     tmux \
     graphviz \
@@ -151,17 +155,23 @@ RUN apt-get update && \
     zsh \
     iputils-ping \
     net-tools \
-	tree \
+    tree \
     xterm \
-    lxterminal && \
-    gem install --user-install tmuxinator bundler && \
-    apt install -f
-
+    lxterminal \
+    libglew-dev \
+    libxkbcommon-dev \
+    && gem install --user-install tmuxinator bundler  \
+    && apt install -f
 
 # Install pytho  dependencies
-COPY ./requirements.txt /root/
-RUN  pip3 install --force-reinstall -r /root/requirements.txt
+COPY ./requirements-python2.txt /root/
+COPY ./requirements-python3.txt /root/
 
+# RUN  pip3 install --force-reinstall -r /root/requirements-python3.txt \
+#     && pip2 install --force-reinstall -r /root/requirements-python2.txt
+ 
+RUN  pip3 install -r /root/requirements-python3.txt \
+    && pip2 install -r /root/requirements-python2.txt
 
 # Self defined script
 COPY ./userconfig.sh /root/
@@ -176,6 +186,10 @@ RUN rm ~/dotfiles -rf && \
     rm -rf ~/.tmux.conf && \
     ln -s ~/dotfiles/.vimrc && \
     ln -s ~/dotfiles/.tmux.conf
+
+# VIM plugin
+RUN curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
 # Load ROS environment at each run
 COPY ./entrypoint-melodic.sh /
@@ -193,5 +207,3 @@ WORKDIR /root
 # utility: required for using nvidia-smi and NVML.
 # video: required for using the Video Codec SDK. Required by ZED SDK.
 ENV NVIDIA_DRIVER_CAPABILITIES compute,display,graphics,utility,video
-
-

@@ -1,0 +1,35 @@
+# versiion
+ARG cuda_version=9.0
+ARG cudnn_version=7
+ARG ubuntu_version=16.04
+
+# base image
+FROM nvidia/cuda:${cuda_version}-cudnn${cudnn_version}-devel-ubuntu${ubuntu_version}
+
+# maintainer
+MAINTAINER MAINTAINER_NAME yubaoliu89@gmail.com
+
+
+RUN  apt-get update \
+     && apt-get install -y wget git htop libhdf5-dev g++ graphviz openmpi-bin python3-pip python3-dev vim openssh-server language-pack-ja language-pack-en \
+      curl zip unzip
+
+#update pip
+RUN curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
+
+RUN git clone https://github.com/yubaoliu/Mask_RCNN.git \
+	&& cd Mask_RCNN \
+	&& git checkout Mask_RCNN \
+    && mv requirements.txt requirements.txt.bk \
+    && sed -e 's/tensorflow>=1.3.0/tensorflow-gpu>=1.3.0,<1.11.0/g' requirements.txt.bk > requirements.txt \
+    && pip3 install -r requirements.txt \
+    && python3 setup.py install \
+	&& cd samples/balloon/ \
+    && wget -c https://github.com/matterport/Mask_RCNN/releases/download/v2.1/balloon_dataset.zip \
+    && wget -c https://github.com/matterport/Mask_RCNN/releases/download/v2.1/mask_rcnn_balloon.h5 \
+	&& wget -c https://github.com/matterport/Mask_RCNN/releases/download/v1.0/mask_rcnn_coco.h5 \
+    && unzip balloon_dataset.zip
+
+# for reading cucumber dataset
+RUN pip3 install pandas
+

@@ -1,0 +1,39 @@
+version: '2.3'
+services:
+  rts-vslam:
+    image: yubaoliu/rts-vslam:latest
+    build:
+        context: .
+        dockerfile: dockerfile
+    container_name: rts-vslam
+    command: roscore
+    runtime: nvidia
+    # stdin_open: true
+    # tty: true
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        - ${DATASET_DIR}:/root/Dataset
+        - ..:/root/rts-vslam
+        # - root:/root
+    network_mode: host
+
+  # ros_master:
+  #   image: yubaoliu/rts-vslam:latest
+  #   command: roscore
+  #   runtime: nvidia
+  #   environment:
+  #       - DISPLAY
+  #       - QT_X11_NO_MITSHM=1
+  #   volumes:
+  #       - /tmp/.X11-unix:/tmp/.X11-unix:rw
+  #       - ${DATASET_DIR}:/root/Dataset
+  #       - root:/root
+  #   cap_add:
+  #       - SYS_PTRACE
+  #   privileged: true
+  #   network_mode: host
+
+# volumes:
+#     root:
+
+

@@ -1,0 +1,21 @@
+version: '2.3'
+services:
+  ubuntu_cuda9_build:
+    image: yubaoliu/root:ros-cuda9.0-cudnn7-ubuntu16
+    build:
+        context: .
+        dockerfile: dockerfile-ubuntu16
+        args:
+            cuda_version: 9.0
+            cudnn_version: 7
+            ubuntu_version: 16.04
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        - ubuntu_cuda9:/root
+    entrypoint: /entrypoint-kinetic.sh
+
+volumes:
+    ubuntu_cuda9:
