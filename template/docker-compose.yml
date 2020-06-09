@@ -1,26 +1,37 @@
 version: '2.3'
 services:
   detectslam:
-    image: yubaoliu/detectslam:latest
+    image: yubaoliu/template:latest
     build:
         context: .
-    container_name: detectslam
+    args:
+        cuda_version: 10.2
+        cudnn_version: 7
+        ubuntu_version: 18
+    container_name: template
     stdin_open: true
     tty: true
-    # command: bash
+    command: 
+        - bash
+        # - roscore
+        # - lxterminal
     runtime: nvidia
     environment:
         - DISPLAY
         - QT_X11_NO_MITSHM=1
+        # - ROS_HOSTNAME=orbslam2
+        # - ROS_MASTER_URI=http://orbslam2:11311
     volumes:
         - /tmp/.X11-unix:/tmp/.X11-unix:rw
         - ${DATASET_DIR}:/root/Dataset
-        - detectslam:/root
+        - template:/root
+        - ..:/work
     cap_add:
         - SYS_PTRACE
     privileged: true
-
+    entrypoint: /entrypoint.sh
+    network_mode: host
 volumes:
-    detectslam:
+    template:
 
 
