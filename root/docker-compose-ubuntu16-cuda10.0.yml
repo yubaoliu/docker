@@ -1,0 +1,31 @@
+version: '2.3'
+services:
+  root_cuda10.0_ubuntu16:
+    image: yubaoliu/root:ros-cuda10.0-cudnn7-ubuntu16.04
+    container_name: root_cuda10.0_ubuntu16
+    build:
+        context: .
+        dockerfile: dockerfile-ubuntu16
+        args:
+            cuda_version: 10.0
+            cudnn_version: 7
+            ubuntu_version: 16.04
+    runtime: nvidia
+    stdin_open: true
+    tty: true
+    privileged: true
+    command:
+        - roscore
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+    devices:
+        - /dev/dri
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        - ~/.Xauthority:/root/.Xauthority
+        # - /usr/lib/nvidia-cuda-toolkit:/usr/lib/nvidia-cuda-toolkit
+        # - root:/root
+
+# volumes:
+    # root:

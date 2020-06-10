@@ -3,7 +3,9 @@ ARG cuda_version=10.2
 ARG cudnn_version=7
 ARG ubuntu_version=18.04
 
-FROM nvidia/cuda:${cuda_version}-cudnn${cudnn_version}-devel-ubuntu${ubuntu_version}
+# FROM nvidia/cudagl:10.2-devel-ubuntu16.04
+FROM nvidia/cuda:${cuda_version}-devel-ubuntu${ubuntu_version}
+# FROM nvidia/cuda:${cuda_version}-cudnn${cudnn_version}-devel-ubuntu${ubuntu_version}
 # FROM nvidia/cuda:${cuda_version}-cudnn${cudnn_version}-devel-ubuntu18.04
 #FROM ubuntu:18.04
 
@@ -12,7 +14,6 @@ MAINTAINER yubaoliu89@gmail.com
 
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
-
 
 # Setup timezone
 RUN echo 'Etc/UTC' > /etc/timezone && \
@@ -54,7 +55,8 @@ RUN apt-get update && \
     libssl-dev \
     libreadline-dev \
     zlib1g-dev && \
-    apt install -f
+    apt install -f \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install rbenv
 RUN apt autoremove -y ruby*  \
@@ -77,28 +79,6 @@ ENV RUBYOPT -EUTF-8
 # Install bundler
 RUN ~/.rbenv/bin/rbenv exec gem install bundler
 
-# upgrade Ruby before other tasks
-# Remove old version firstly
-# Install Ruby on Ubuntu with Snap
-# https://stackify.com/install-ruby-on-ubuntu-everything-you-need-to-get-going/
-# Install rbenv and ruby-build
-# ENV PATH ~/.rbenv/bin:$PATH
-# RUN apt-get update && \
-#     apt remove -y ruby && \
-#     apt autoremove -y && \
-#     rm ~/.rbenv -rf && \
-#     git clone https://github.com/sstephenson/rbenv.git ~/.rbenv && \
-#     git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build && \
-#     ~/.rbenv/plugins/ruby-build/install.sh && \
-#     echo 'eval "$(rbenv init -)"' >> /etc/profile.d/rbenv.sh  && \
-#     echo 'eval "$(rbenv init -)"' >> .bashrc && \
-#     ~/.rbenv/bin/rbenv install 2.6.6 && \
-#     ~/.rbenv/bin/rbenv global 2.6.6 && \
-#     apt-get install -y rubygems npm 
- 
-
-#ENV PATH /root/.rbenv/bin:$PATH
-#
 # Add ROS repository
 RUN sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' && \
 # Keys for ROS repository

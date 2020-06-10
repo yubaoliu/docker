@@ -2,8 +2,8 @@ version: '2.3'
 services:
   ros_master:
     image: yubaoliu/root:ros-cuda10.0-cudnn7-ubuntu18
-    ports:
-        - 11311:11311
+    # ports:
+        # - 11311:11311
     build:
         context: .
         dockerfile: dockerfile-ubuntu18
@@ -11,8 +11,8 @@ services:
             cuda_version: 10.0
             cudnn_version: 7
             ubuntu_version: 18.04
-    volumes:
-        - ubuntu18_cuda10_root:/root
+    # volumes:
+        # - ubuntu18_cuda10_root:/root
 
-volumes:
-    ubuntu18_cuda10_root:
+# volumes:
+    # ubuntu18_cuda10_root:

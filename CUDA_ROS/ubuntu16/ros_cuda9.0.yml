@@ -1,21 +1,30 @@
 version: '2.3'
 services:
-  ubuntu_cuda9_build:
+  ubuntu16_cuda9_ros:
     image: yubaoliu/root:ros-cuda9.0-cudnn7-ubuntu16.04
     build:
         context: .
-        dockerfile: dockerfile-ubuntu16
+        dockerfile: Dockerfile
         args:
             cuda_version: 9.0
-            cudnn_version: 7
+            # cudnn_version: 7
             ubuntu_version: 16.04
+    runtime: nvidia
+    privileged: true
+    command:
+        - roscore
+    stdin_open: true
+    tty: true
+    network_mode: "host"
+    devices:
+        - /dev/dri
     environment:
         - DISPLAY
         - QT_X11_NO_MITSHM=1
     volumes:
         - /tmp/.X11-unix:/tmp/.X11-unix:rw
-        # - ubuntu_cuda9:/root
+        - ubuntu16_cuda9_ros:/root
     # entrypoint: /entrypoint-kinetic.sh
 
-# volumes:
-    # ubuntu_cuda9:
+volumes:
+    ubuntu16_cuda9_ros:

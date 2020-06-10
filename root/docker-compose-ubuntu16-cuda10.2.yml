@@ -1,6 +1,6 @@
 version: '2.3'
 services:
-  ros_master:
+  root_cuda10.2_ubuntu16:
     image: yubaoliu/root:ros-cuda10.2-cudnn7-ubuntu16
     build:
         context: .
@@ -9,8 +9,16 @@ services:
             cuda_version: 10.2
             cudnn_version: 7
             ubuntu_version: 16.04
+    runtime: nvidia
+    stdin_open: true
+    command:
+        - roscore
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
     volumes:
-        - root:/root
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        - root_cuda10.2_ubuntu16:/root
 
 volumes:
-    root:
+    root_cuda10.2_ubuntu16:
