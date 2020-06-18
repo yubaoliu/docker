@@ -1,0 +1,25 @@
+version: '2.3'
+services:
+  ubuntu16:
+    image: yubaoliu/root:ubuntu16
+    build:
+        context: .
+        dockerfile: Dockerfile
+        args:
+            cuda_version: 10.2
+            nvidia_cudnn_version: 8.0.0+cuda10.2
+            ubuntu_version: 16.04
+    runtime: nvidia
+    stdin_open: true
+    tty: true
+    network_mode: "host"
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        - ubuntu16:/root
+    # entrypoint: /entrypoint-kinetic.sh
+
+volumes:
+    ubuntu16:
