@@ -165,8 +165,6 @@ ENTRYPOINT ["/entrypoint-melodic.sh"]
 
 CMD ["bash"]
 
-WORKDIR /root/catkin_ws/src
-
 # From https://github.com/NVIDIA/nvidia-container-runtime/blob/master/README.md
 # compute: required for CUDA and OpenCL applications.
 # display: required for leveraging X11 display.

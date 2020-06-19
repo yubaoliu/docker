@@ -1,6 +1,6 @@
 version: '2.3'
 services:
-  ros_master:
+  ubuntu18_cuda10.2_ros:
     image: yubaoliu/root:ros-cuda10.2-cudnn7-ubuntu18.04
     build:
         context: .
@@ -10,6 +10,19 @@ services:
             nvidia_cudnn_version: 7.6.5.32-1+cuda10.2
             # cudnn_version: 7
             ubuntu_version: 18.04
+    runtime: nvidia
+    command:
+        - roscore
+    stdin_open: true
+    privileged: true
+    tty: true
+    network_mode: "host"
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+
     # volumes:
         # - root:/root
 

@@ -173,4 +173,3 @@ RUN apt-get update && \
     && apt install -f
 #############################################
 
-WORKDIR /root/catkin_ws/src
