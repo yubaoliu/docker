@@ -1,0 +1,34 @@
+version: '2.3'
+services:
+  realsense_kinetic:
+    image: yubaoliu/realsense_kinetic:cuda10.2
+    build:
+        context: .
+    container_name: realsense_kenetic
+    stdin_open: true
+    tty: true
+    runtime: nvidia
+    # command: bash
+    command:
+        - roscore
+    # command: roslaunch maskrcnn_ros action_server.launch
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        # - ../..:/root/catkin_ws/src/robot_simulator
+        - ${DATASET_DIR}:/root/Dataset
+        # - aivslam:/root
+    devices:
+        - /dev:/dev
+    # ports:
+        # - ${PORT}:8888
+    privileged: true
+    entrypoint: /entrypoint.sh
+    network_mode: host
+    # cap_add:
+        # - SYS_PTRACE
+
+# volumes:
+    # aivslam:

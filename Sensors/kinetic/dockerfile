@@ -1,0 +1,38 @@
+FROM yubaoliu/root:ros-cuda10.2-cudnn7-ubuntu16.04
+
+RUN apt update \
+    && apt install -f \
+    && apt install -y  libglew-dev \
+       sudo \
+       dkms \
+       dialog apt-utils \
+       libxkbcommon-dev \
+       cmake-qt-gui \
+       libgoogle-glog-dev \   
+    && rm -rf /var/lib/apt/lists/*
+
+
+# Install Realsense
+RUN apt update \
+    && apt-key adv --keyserver keys.gnupg.net --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE || apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE \
+    && add-apt-repository -y "deb http://realsense-hw-public.s3.amazonaws.com/Debian/apt-repo xenial main" -u \
+    && apt-get install -y librealsense2-dkms librealsense2-utils
+
+
+# # Install dependencies
+# # Newer CUDA was installed in base image, so rosdep keys of CUDA are skipped
+# RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && \
+#                   rosdep install --from-paths src -r -y --skip-keys=\"nvidia-cuda-dev nvidia-cuda\""
+#                   
+# # Build
+# RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && \
+#                   catkin_make -DCMAKE_BUILD_TYPE=Release"
+ 
+# # Load ROS environment at each run
+COPY ./entrypoint.sh /
+RUN chmod 755 /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["bash"]
+
+WORKDIR /root/catkin_ws/src

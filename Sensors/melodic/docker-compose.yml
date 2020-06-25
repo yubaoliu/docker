@@ -1,0 +1,34 @@
+version: '2.3'
+services:
+  realsense_melodic:
+    image: yubaoliu/realsense_melodic:cuda10.2
+    build:
+        context: .
+    container_name: realsense_melodic
+    stdin_open: true
+    tty: true
+    runtime: nvidia
+    # command: bash
+    command:
+        - roscore
+    # command: roslaunch maskrcnn_ros action_server.launch
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        # - ..:/root/catkin_ws/src/robot_simulator
+        - ${DATASET_DIR}:/root/Dataset
+        # - aivslam:/root
+        # - /home/yubao/data/project/slambook:/root/slambook
+        # - /home/yubao/data/project/slambook2:/root/slambook2
+    # ports:
+        # - ${PORT}:8888
+    privileged: true
+    entrypoint: /entrypoint.sh
+    network_mode: host
+    # cap_add:
+        # - SYS_PTRACE
+
+# volumes:
+    # aivslam:
