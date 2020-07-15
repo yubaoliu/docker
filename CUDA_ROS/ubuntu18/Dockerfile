@@ -158,6 +158,15 @@ COPY ./requirements-python3.txt /root/
 RUN  pip3 install -r /root/requirements-python3.txt \
     && pip2 install -r /root/requirements-python2.txt
 
+# dotfile
+RUN cd /root \
+    && git clone https://github.com/yubaoliu/dotfiles.git \
+    && cd dotfiles \
+    && rm ~/.vimrc ~/.tmux.conf -f \
+    && cd /root \
+    && ln -s dotfiles/.vimrc \
+    && ln -s dotfiles/.tmux.conf
+
 # Load ROS environment at each run
 COPY ./entrypoint-melodic.sh /
 RUN /bin/bash -c "chmod 777 /entrypoint-melodic.sh"
