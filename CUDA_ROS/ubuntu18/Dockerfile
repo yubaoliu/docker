@@ -165,7 +165,9 @@ RUN cd /root \
     && rm ~/.vimrc ~/.tmux.conf -f \
     && cd /root \
     && ln -s dotfiles/.vimrc \
-    && ln -s dotfiles/.tmux.conf
+    && ln -s dotfiles/.tmux.conf \
+    && curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
 # Load ROS environment at each run
 COPY ./entrypoint-melodic.sh /

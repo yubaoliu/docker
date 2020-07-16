@@ -11,8 +11,8 @@ services:
             # cudnn_version: 7
             ubuntu_version: 18.04
     runtime: nvidia
-    command:
-        - roscore
+    command: lxterminal
+        # - roscore
     stdin_open: true
     privileged: true
     tty: true
