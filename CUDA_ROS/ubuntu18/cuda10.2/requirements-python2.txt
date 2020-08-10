@@ -1,0 +1,9 @@
+autopep8
+yapf 
+remark
+cython
+opencv-python
+h5py
+imageio==2.6.1
+imgaug
+IPython[all]

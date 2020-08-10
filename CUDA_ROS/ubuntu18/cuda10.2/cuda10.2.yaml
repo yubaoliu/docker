@@ -1,16 +1,15 @@
 version: '2.3'
 services:
-  ubuntu18_cuda10.0_ros:
-    image: yubaoliu/root:ros-cuda10.0-cudnn7-ubuntu18.04
+  ubuntu18_cuda10.2_ros:
+    image: yubaoliu/root:ros-cuda10.2-cudnn7-ubuntu18.04
     build:
         context: .
         dockerfile: Dockerfile
         args:
-            cuda_version: 10.0
-            nvidia_cudnn_version: 7.4.2.24-1+cuda10.0
+            cuda_version: 10.2
+            nvidia_cudnn_version: 7.6.5.32-1+cuda10.2
             # cudnn_version: 7
             ubuntu_version: 18.04
-    container_name: root_ubuntu18.04_cuao10.0
     runtime: nvidia
     command: lxterminal
         # - roscore
