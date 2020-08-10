@@ -2,7 +2,7 @@ autopep8
 yapf 
 remark
 cython
-opencv-python
+opencv-python==3.3.1.11
 h5py
 imageio==2.6.1
 imgaug
