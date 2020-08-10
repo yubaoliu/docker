@@ -155,8 +155,8 @@ RUN apt-get update && \
 COPY ./requirements-python2.txt /root/
 COPY ./requirements-python3.txt /root/
 
-RUN  pip3 install -r /root/requirements-python3.txt \
-    && pip2 install -r /root/requirements-python2.txt
+RUN pip3 install -r /root/requirements-python3.txt
+RUN pip2 install -r /root/requirements-python2.txt
 
 # dotfile
 RUN cd /root \
