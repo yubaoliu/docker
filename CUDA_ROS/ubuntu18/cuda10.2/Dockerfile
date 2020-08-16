@@ -70,6 +70,16 @@ RUN apt-get update && \
     apt install -f \
     && rm -rf /var/lib/apt/lists/*
 
+# Install cmake
+RUN apt-get purge cmake \
+    && cd /tmp \
+    && wget -c https://github.com/Kitware/CMake/releases/download/v3.18.1/cmake-3.18.1.tar.gz \
+    && tar -xzvf cmake-3.18.1.tar.gz \
+    && cd cmake-3.18.1 \
+    && ./bootstrap && make && sudo make install \
+    && rm cmake-3.18.1 -rf 
+
+
 ##############################################3
 # Install rbenv
 RUN apt autoremove -y ruby*  \
