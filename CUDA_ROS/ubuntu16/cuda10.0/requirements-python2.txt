@@ -1,0 +1,6 @@
+autopep8
+yapf 
+remark
+cython
+h5py
+IPython[all]

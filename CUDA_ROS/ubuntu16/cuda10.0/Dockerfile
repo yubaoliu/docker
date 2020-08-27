@@ -1,8 +1,8 @@
 # versiion
-ARG cuda_version=10.2
+ARG cuda_version=10.0
 # ARG cudnn_version=7
-ARG ubuntu_version=18.04
-ARG nvidia_cudnn_version=7.6.5.32-1+cuda10.2
+ARG ubuntu_version=16.04
+ARG nvidia_cudnn_version=7.6.5.32-1+cuda10.0
 
 # FROM nvidia/cudagl:10.2-devel-ubuntu16.04
 FROM nvidia/cudagl:${cuda_version}-devel-ubuntu${ubuntu_version}
@@ -106,7 +106,7 @@ RUN sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) 
 # Keys for ROS repository
     apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 && \
 # Install ROS-Base packages
-    apt-get update && apt install -f && apt-get install -y ros-melodic-desktop-full
+    apt-get update && apt install -f && apt-get install -y ros-kinetic-desktop-full
 
 # Install ROS bootstrap tools
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -123,11 +123,11 @@ RUN rosdep update
 ### Create catkin workspace ###
 RUN mkdir -p /root/catkin_ws/src
 WORKDIR /root/catkin_ws
-RUN bash -c "source /opt/ros/melodic/setup.bash && \
+RUN bash -c "source /opt/ros/kinetic/setup.bash && \
              catkin_make -DCMAKE_BUILD_TYPE=Release"
 
 # Load ROS environment at docker exec bash
-RUN echo "source /opt/ros/melodic/setup.bash" >> /root/.bashrc
+RUN echo "source /opt/ros/kinetic/setup.bash" >> /root/.bashrc
 RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
 ##############################################3
 
@@ -181,9 +181,9 @@ RUN cd /root \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
 # Load ROS environment at each run
-COPY ./entrypoint-melodic.sh /
-RUN /bin/bash -c "chmod 777 /entrypoint-melodic.sh"
-ENTRYPOINT ["/entrypoint-melodic.sh"]
+COPY ./entrypoint-kinetic.sh /
+RUN /bin/bash -c "chmod 777 /entrypoint-kinetic.sh"
+ENTRYPOINT ["/entrypoint-kinetic.sh"]
 
 CMD ["bash"]
 

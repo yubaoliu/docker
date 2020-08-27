@@ -66,6 +66,7 @@ RUN apt-get update && \
     libncurses5-dev \
     libssl-dev \
     libreadline-dev \
+    perltidy \
     zlib1g-dev && \
     apt install -f \
     && rm -rf /var/lib/apt/lists/*
