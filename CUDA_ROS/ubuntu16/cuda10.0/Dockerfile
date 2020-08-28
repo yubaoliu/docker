@@ -148,19 +148,26 @@ RUN apt-get update && \
     vim-gtk \ 
     xclip \
     openssh-server \
-    tmux \
     graphviz \
     trash-cli \
     zsh \
     iputils-ping \
     net-tools \
     tree \
-    xterm \
-    lxterminal \
     libglew-dev \
     libxkbcommon-dev \
-    && gem install --user-install tmuxinator bundler  \
+    xterm \
+    lxterminal \
+    && gem install --user-install bundler \
     && apt install -f
+
+# Tmux
+RUN git clone https://github.com/tmux/tmux.git \
+    && cd tmux \
+    && git checkout 2.6 \
+    && sh autogen.sh \
+    && ./configure && make && make install \
+    && gem install --user-install tmuxinator
 
 # Install pytho  dependencies
 COPY ./requirements-python2.txt /root/
@@ -173,12 +180,8 @@ RUN pip2 install -r /root/requirements-python2.txt
 RUN cd /root \
     && git clone https://github.com/yubaoliu/dotfiles.git \
     && cd dotfiles \
-    && rm ~/.vimrc ~/.tmux.conf -f \
-    && cd /root \
-    && ln -s dotfiles/.vimrc \
-    && ln -s dotfiles/.tmux.conf \
-    && curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
-    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    && ./deploy.sh \
+    && touch ~/local_config.sh
 
 # Load ROS environment at each run
 COPY ./entrypoint-kinetic.sh /

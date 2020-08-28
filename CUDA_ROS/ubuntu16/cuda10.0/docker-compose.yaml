@@ -12,7 +12,8 @@ services:
             ubuntu_version: 16.04
     container_name: root_ubuntu16.04_cuao10.0
     runtime: nvidia
-    command: lxterminal
+    # command: lxterminal
+    command: xterm
         # - roscore
     stdin_open: true
     privileged: true
