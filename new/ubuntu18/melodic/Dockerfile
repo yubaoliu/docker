@@ -55,21 +55,17 @@ RUN apt-get update && \
 # Add ROS repository
 RUN sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' && \
 # Keys for ROS repository
-    apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 && \
+    apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654  \
 # Install ROS-Base packages
-    apt-get update && apt install -f && apt-get install -y ros-melodic-desktop-full
-
-# Install ROS bootstrap tools
-RUN apt-get update && apt-get install --no-install-recommends -y \
+    && apt-get update && apt-get install --no-install-recommends -y \
+    ros-melodic-desktop-full \
     python-rosdep \
     python-rosinstall \
     python-vcstools \
     python-rosinstall-generator \
-    python-wstool
-
-# Set up rosdep
-RUN rosdep init
-RUN rosdep update
+    python-wstool \
+    && rosdep init \
+    && rosdep update
 
 ### Create catkin workspace ###
 RUN mkdir -p /root/catkin_ws/src

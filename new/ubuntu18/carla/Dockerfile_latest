@@ -1,0 +1,91 @@
+ARG carla_version=latest
+
+FROM nvidia/cudagl:11.0-devel-ubuntu20.04
+MAINTAINER yubaoliu89@gmail.com
+
+# Setup timezone
+RUN echo 'Asia/Tokyo' > /etc/timezone && \
+    rm -f /etc/localtime && \
+    # echo 'Etc/UTC' > /etc/timezone && \
+    # ln -s /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
+    ln -s /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
+    apt-get update && apt-get install -y tzdata
+
+RUN apt-get update  \
+    && apt install -y xterm lxterminal vim
+ 
+# Install dependencies
+RUN apt-get update \ 
+    && apt-get install -y wget software-properties-common lsb-core\
+    && add-apt-repository -y ppa:ubuntu-toolchain-r/test \
+    && wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|apt-key add - \ 
+    # && apt-add-repository -y "deb http://apt.llvm.org/$(lsb_release -c --short)/ llvm-toolchain-$(lsb_release -c --short)-8 main" \
+    && apt-get update
+
+RUN add-apt-repository universe \
+    && apt install -y python2.7 python3 python3-pip
+
+# Change default clang version
+RUN update-alternatives --install /usr/bin/clang++ clang++ /usr/lib/llvm-8/bin/clang++ 180 \
+    && update-alternatives --install /usr/bin/clang clang /usr/lib/llvm-8/bin/clang 180
+
+# Get a GitHub and an Unreal Engine account, and link both
+# Download Unreal Engine 4.24
+RUN git clone --depth 1 -b carla https://github.com/CarlaUnreal/UnrealEngine.git ~/UnrealEngine_4.26 \
+    && cd ~/UnrealEngine_4.26 \
+    && ./Setup.sh && ./GenerateProjectFiles.sh && make \
+    && cd ~/UnrealEngine_4.26/Engine/Binaries/Linux && ./UE4Editor \
+    && export UE4_ROOT=~/UnrealEngine_4.26 
+
+# Clone the CARLA repository
+RUN git clone https://github.com/carla-simulator/carla \
+    && cd ~/carla \
+    && ./Update.sh \
+    && make PythonAPI \
+    && make launch \
+    && cd PythonAPI/examples \
+    && python3 -m pip install -r requirements.txt \
+    && python3 spawn_npc.py  \
+    && make PythonAPI ARGS="--python-version=2"
+
+# Terminal B
+# cd PythonAPI/examples
+# python3 spawn_npc.py
+# python3 dynamic_weather.py
+# RUN add-apt-repository ppa:oibaf/graphics-drivers \
+#     && apt update \
+#     && apt install -y libvulkan1 mesa-vulkan-drivers vulkan-utils
+    
+# COPY ./requirements.txt . 
+# RUN  pip3 install -r requirements.txt
+
+COPY ./entrypoint.sh /entrypoint.sh
+
+# There are two different ways to install CARLA
+
+# Option A) Debian package installation
+# This repository contains CARLA 0.9.10 and later. To install previous CARLA versions, change to a previous version of the docs using the pannel in the bottom right part of the window
+# RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1AF1527DE64CB8D9 \
+#     && add-apt-repository -y "deb [arch=amd64] http://dist.carla.org/carla $(lsb_release -sc) main" \
+#     && apt-get update \
+#     && apt-get install -y carla-simulator 
+
+# sudo apt-get install carla-simulator=0.9.10-1 # install a specific CARLA version
+# cd /opt/carla-simulator
+# ./CarlaUE4.sh
+
+# Option B) Package installation
+#   Go to: https://github.com/carla-simulator/carla/blob/master/Docs/download.md
+#   Download the desired package and additional assets
+#   Extract the package
+#   Extract the additional assets in `/Import`
+#   Run CARLA (Linux).
+# ./CarlaUE.sh
+
+RUN useradd -s /bin/bash -d /home/carla/ -m -G sudo carla
+USER carla
+
+ENTRYPOINT ["./entrypoint.sh"]
+# ENV SDL_VIDEODRIVER=offscreen
+
+CMD ["bash"]

@@ -1,0 +1,32 @@
+version: '2.3'
+services:
+  carla-latest:
+    image: yubaoliu/carla:latest
+    build:
+        context: .
+        dockerfile: Dockerfile
+        args:
+            carla_version: latest
+    runtime: nvidia
+    # stdin_open: true
+    # tty: true
+    # command: xterm
+    command: lxterminal
+    ports:
+        - 2000-2002:2000-2002
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        - ${DATASET_DIR}:/root/Dataset
+        - /home/yubao/data/software/CARLA_0.9.11:/CARLA_0.9.11
+        - carla:/root
+    cap_add:
+        - SYS_PTRACE
+    # privileged: true
+    entrypoint: /entrypoint.sh
+    network_mode: host
+
+volumes:
+    carla:

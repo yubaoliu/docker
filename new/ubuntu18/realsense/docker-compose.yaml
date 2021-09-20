@@ -1,0 +1,27 @@
+version: '2.3'
+services:
+  realsense:
+    image: yubaoliu/realsense
+    build:
+        context: .
+        dockerfile: Dockerfile
+    # container_name: root_ubuntu16.04_cuao10.0
+    runtime: nvidia
+    command: xterm
+    # command: terminator
+    # command: lxterminal
+    stdin_open: true
+    privileged: true
+    tty: true
+    network_mode: host
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+
+    # volumes:
+        # - root:/root
+
+# volumes:
+    # root:

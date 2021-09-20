@@ -6,6 +6,10 @@
 xhost +local:root
 ```
 
+# How to use
+
+- FROM yubaoliu/ros:noetic-cuda11
+
 # Root
 
 ## Image
@@ -38,3 +42,5 @@ In this case:
 - Cannot use ssh to git clone repo in dockerfile
 
 
+# TODO
+- 为了节省存储空间，分层管理dockerfile

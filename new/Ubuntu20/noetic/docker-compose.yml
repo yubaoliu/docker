@@ -1,0 +1,31 @@
+version: '2.3'
+services:
+  ros_noetic:
+    image: yubaoliu/ros:noetic-cuda11
+    # container_name: root_ros_noetic
+    build:
+        context: .
+        dockerfile: Dockerfile
+        # args:
+            # cuda_version: 10.0
+            # cudnn_version: 7
+            # ubuntu_version: 16.04
+    runtime: nvidia
+    stdin_open: true
+    tty: true
+    privileged: true
+    command:
+        - lxterminal
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+    devices:
+        - /dev/dri
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        # - ~/.Xauthority:/root/.Xauthority
+        # - /usr/lib/nvidia-cuda-toolkit:/usr/lib/nvidia-cuda-toolkit
+        # - root:/root
+
+# volumes:
+    # root:

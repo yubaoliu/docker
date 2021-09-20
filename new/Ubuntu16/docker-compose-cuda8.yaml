@@ -1,0 +1,29 @@
+version: '2.3'
+services:
+  ubuntu16_cuda8.0:
+    image: yubaoliu/root:ros-cuda8.0-cudnn6-ubuntu16.04
+    build:
+        context: .
+        dockerfile: Dockerfile
+        args:
+            tag: 8.0-cudnn6-devel-ubuntu16.04
+    # container_name: root_ubuntu16.04_cuao10.0
+    runtime: nvidia
+    command: terminator
+    # command: lxterminal
+    # command: xterm
+    stdin_open: true
+    privileged: true
+    tty: true
+    network_mode: host
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+
+    # volumes:
+        # - root:/root
+
+# volumes:
+    # root:

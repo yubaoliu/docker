@@ -9,8 +9,6 @@ RUN echo 'Etc/UTC' > /etc/timezone && \
     apt-get update \
     && apt-get install -y tzdata
 
-
-#####################TOOLS#########
 RUN apt-get update && \
     apt-get install -y software-properties-common \
     sudo wget autoconf  \
@@ -25,4 +23,3 @@ RUN wget -c  https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604
     && add-apt-repository "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/ /" \
     && apt-get update \
     && apt-get -y install cuda
-#############CUDANN ################

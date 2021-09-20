@@ -106,9 +106,10 @@ RUN apt-get update  \
     python-pip \
     python3-dev \
     python3-pip 
+
 #update pip 
-RUN curl -kL https://bootstrap.pypa.io/get-pip.py | python3 \
-    && curl -kL https://bootstrap.pypa.io/get-pip.py | python
+RUN curl -kL https://bootstrap.pypa.io/pip/2.7/get-pip.py | python && \
+    curl -kL https://bootstrap.pypa.io/pip/3.5/get-pip.py  | python3
 
 ## Finally install some helpful tools
 #RUN apt-get update && \

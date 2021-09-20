@@ -27,7 +27,6 @@ RUN apt-get install -y --no-install-recommends libjpeg-dev zlib1g-dev && \
 RUN pip3 --no-cache-dir install \
     numpy scipy sklearn scikit-image pandas matplotlib Cython requests
 
-#
 # Jupyter Notebook
 #
 # Allow access from outside the container, and skip trying to open a browser.
