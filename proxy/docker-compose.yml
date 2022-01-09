@@ -1,0 +1,40 @@
+version: '2.3'
+services:
+  proxy:
+    image: yubaoliu/proxy
+    # container_name: root_ros_melodic
+    build:
+        context: .
+        dockerfile: Dockerfile
+        args:
+            http_proxy: $HTTP_PROXY
+            https_proxy: $HTTPS_PROXY
+            # cuda_version: 10.0
+            # cudnn_version: 7
+            # ubuntu_version: 16.04
+    runtime: nvidia
+    stdin_open: true
+    tty: true
+    privileged: true
+    command: xterm
+    network_mode: host
+    # ports:
+    #     - 8889:8889
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+        - http_proxy=$HTTP_PROXY
+        - https_proxy=$HTTPS_PROXY
+    dns:
+        - 8.8.8.8
+        - 8.8.4.4
+      #    expose: 
+          #- "8889"
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        - ~/.Xauthority:/root/.Xauthority
+        #- /usr/lib/nvidia-cuda-toolkit:/usr/lib/nvidia-cuda-toolkit
+        # - root:/root
+
+# volumes:
+    # root:

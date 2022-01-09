@@ -48,7 +48,6 @@ RUN apt-get update && \
     libyaml-dev \
     dirmngr \
     gnupg \
-    git \
     build-essential \
     libffi-dev \
     libncurses5-dev \

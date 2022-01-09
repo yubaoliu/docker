@@ -52,7 +52,6 @@ RUN apt-get update && \
     autotools-dev \
     automake \
     libgdbm-dev \
-    libssl-dev \
     libreadline-dev \
     zlib1g-dev \
     autoconf \
@@ -72,7 +71,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Install cmake
-RUN apt-get purge cmake \
+RUN apt-get purge -y  cmake \
     && cd /tmp \
     && wget -c https://github.com/Kitware/CMake/releases/download/v3.18.1/cmake-3.18.1.tar.gz \
     && tar -xzvf cmake-3.18.1.tar.gz \

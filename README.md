@@ -6,9 +6,11 @@
 xhost +local:root
 ```
 
-# How to use
+# Release 
 
-- FROM yubaoliu/ros:noetic-cuda11
+- FROM yubao/ubuntu20:cuda11
+- FROM yubao/ubuntu18:cuda11
+- FROM yubao/ubuntu16:cuda11
 
 # Root
 

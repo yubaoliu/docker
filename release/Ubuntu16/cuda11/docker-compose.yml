@@ -1,13 +1,15 @@
 version: '2.3'
 services:
-  ros_noetic:
-    image: yubaoliu/ros:noetic-cuda11
+  ubuntu16-cuda11:
+    image: yubao/ubuntu16:cuda11
     # container_name: root_ros_noetic
     build:
         context: .
         dockerfile: Dockerfile
-        # args:
-            # cuda_version: 10.0
+        args:
+            CUDA_VERSION: 11.3.0-cudnn8
+            ROS_DISTRO: kinetic
+            # CUDNN_VERSION: 7
             # cudnn_version: 7
             # ubuntu_version: 16.04
     runtime: nvidia
@@ -23,9 +25,9 @@ services:
         - /dev/dri
     volumes:
         - /tmp/.X11-unix:/tmp/.X11-unix:rw
-        # - ~/.Xauthority:/root/.Xauthority
+        - ~/.Xauthority:/root/.Xauthority
         # - /usr/lib/nvidia-cuda-toolkit:/usr/lib/nvidia-cuda-toolkit
-        # - root:/root
+        # - root:/root_yubao_ubuntu20_cuda11
 
-# volumes:
-    # root:
+volumes:
+    root_yubao_ubuntu16_cuda11:

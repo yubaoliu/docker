@@ -1,0 +1,33 @@
+version: '2.3'
+services:
+  ubuntu20-cuda11:
+    image: yubao/ubuntu20:cuda11
+    # container_name: root_ros_noetic
+    build:
+        context: .
+        dockerfile: Dockerfile
+        args:
+            CUDA_VERSION: 11.4.0-cudnn8
+            ROS_DISTRO: noetic
+            # CUDNN_VERSION: 7
+            # cudnn_version: 7
+            # ubuntu_version: 16.04
+    runtime: nvidia
+    stdin_open: true
+    tty: true
+    privileged: true
+    command:
+        - lxterminal
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+    devices:
+        - /dev/dri
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        - ~/.Xauthority:/root/.Xauthority
+        # - /usr/lib/nvidia-cuda-toolkit:/usr/lib/nvidia-cuda-toolkit
+        # - root:/root_yubao_ubuntu20_cuda11
+
+volumes:
+    root_yubao_ubuntu20_cuda11:
