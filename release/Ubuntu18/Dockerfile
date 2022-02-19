@@ -11,6 +11,8 @@ MAINTAINER yubao.liu.ra@tut.jp
 
 ENV DEBIAN_FRONTEND noninteractive
 
+WORKDIR /root
+
 # setup timezone
 RUN echo 'Etc/UTC' > /etc/timezone \
     && ln -s /usr/share/zoneinfo/Etc/GMT+8 /etc/localtime  \
@@ -22,6 +24,10 @@ RUN echo 'Etc/UTC' > /etc/timezone \
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
+# config ROS environment
+# RUN rosdep init
+COPY hosts /etc/hosts
+
 COPY sources.list /etc/apt/sources.list
 
 RUN mkdir -p ~/.pip && touch ~/.pip/pip.conf
@@ -31,17 +37,6 @@ COPY pip.conf ~/.pip/pip.conf
 ARG ROS_DISTRO
 # ENV ROS_DISTRO noetic
 ENV ROS_DISTRO ${ROS_DISTRO}
-
-# Install the Nvidia cuDNN library missing in the parent image.
-# https://gitlab.com/nvidia/cuda/blob/ubuntu16.04/10.1/devel/cudnn7/Dockerfile
-# "ARG" is needed here, cannot remove it
-# ARG CUDNN_VERSION
-# ENV NVIDIA_CUDNN_VERSION=${CUDNN_VERSION}
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#     libcudnn7=${CUDNN_VERSION} \
-#     libcudnn7-dev=${CUDNN_VERSION} \
-#     && apt-mark hold libcudnn7 \
-#     && rm -rf /var/lib/apt/lists/*
 
 # Install tools for development
 RUN apt-get update && \
@@ -65,7 +60,7 @@ RUN apt-get purge -y cmake \
     && ./bootstrap --qt-gui && make && make install \
     && rm cmake-3.18.1 -rf 
 
-# Install tools for development
+# Install basic depencies
 RUN apt-get update && \
     apt-get install -y software-properties-common \
     sudo \
@@ -93,8 +88,59 @@ RUN apt-get update && \
     gnupg \
     inetutils-tools \
     inetutils-ping \
+    python3-pip \
+    python3-distutils \
+    libxkbcommon-dev \
+    libc++-dev  \
     --fix-missing \
     && rm -rf /var/lib/apt/lists/*
+
+##-------------- OpenGL (https://gitlab.com/nvidia/container-images/opengl/-/blob/ubuntu18.04/base/Dockerfile)--------------------
+RUN dpkg --add-architecture i386 && \
+    apt-get update && apt-get install -y --no-install-recommends \
+        libxau6 libxau6:i386 \
+        libxdmcp6 libxdmcp6:i386 \
+        libxcb1 libxcb1:i386 \
+        libxext6 libxext6:i386 \
+        libx11-6 libx11-6:i386 && \
+    rm -rf /var/lib/apt/lists/*
+
+# nvidia-container-runtime
+ENV NVIDIA_VISIBLE_DEVICES \
+        ${NVIDIA_VISIBLE_DEVICES:-all}
+ENV NVIDIA_DRIVER_CAPABILITIES \
+        ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics,compat32,utility
+
+RUN echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
+    echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
+
+# Required for non-glvnd setups.
+ENV LD_LIBRARY_PATH /usr/lib/x86_64-linux-gnu:/usr/lib/i386-linux-gnu${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        pkg-config \
+        libglvnd-dev libglvnd-dev:i386 \
+        libgl1-mesa-dev libgl1-mesa-dev:i386 \
+        libegl1-mesa-dev libegl1-mesa-dev:i386 \
+        libgles2-mesa-dev libgles2-mesa-dev:i386 && \
+    rm -rf /var/lib/apt/lists/*
+##----------------------------------
+
+# Dependences and tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libjpeg-dev libpng-dev \
+    libavcodec-dev libavutil-dev libavformat-dev libswscale-dev libavdevice-dev \
+    libdc1394-22-dev libraw1394-dev libopenni-dev   \
+    wayland-protocols \
+    mesa-common-dev \
+    libglu1-mesa-dev \
+    freeglut3-dev \
+    libglew-dev \
+    libeigen3-dev \
+    libboost-dev  \
+    libboost-thread-dev \
+    libboost-filesystem-dev \
+    libwayland-dev
 
 #------------ Install ROS ---------------
 # RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -124,50 +170,54 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     python-wstool \
     --fix-missing
 
-# config ROS environment
-# RUN rosdep init
-COPY hosts /etc/hosts
-
 RUN mkdir -p /root/catkin_ws/src \
     && bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash \
             && cd /root/catkin_ws \
             && catkin_make -DCMAKE_BUILD_TYPE=Release" \
     && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc \
     && echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
+#---------------------------------------
 
+# -------------Install proxychain --------
+RUN git clone https://github.com/rofl0r/proxychains-ng.git \
+    && cd proxychains-ng \
+    && ./configure --prefix=/usr --sysconfdir=/etc \
+    && make \
+    && make install \
+    && make install-config 
 
-# Install tools for development
-# RUN apt-get update && \
-#     apt-get install -y lxterminal vim tmux
+COPY proxychains.conf /etc/proxychains.conf
+# ----------------------
 
-# COPY ./rosdep/20-default.list /etc/ros/rosdep/sources.list.d/20-default.list
-# COPY ./rosdep/*  /etc/ros/rosdep/
-RUN rosdep init
-RUN rosdep update
-
+# Editors
 RUN apt-get update && \
     apt-get install -y  lxterminal \
-    # cmake-curses-gui \
-    # autoconf \
-    # automake \
-    # cmake-qt-gui \
-    # cmake-doc \
     vim \
     tmux \
-    python3-pip \
     --fix-missing \
     && rm -rf /var/lib/apt/lists/*
+
+## Proxy is needed
+# COPY ./rosdep/20-default.list /etc/ros/rosdep/sources.list.d/20-default.list
+# COPY ./rosdep/*  /etc/ros/rosdep/
+RUN proxychains4 rosdep init
+RUN proxychains4 rosdep update
+
+# Test GUI
+RUN git clone https://gitee.com/yubaoliu/Pangolin.git  \
+# RUN git clone https://github.com/stevenlovegrove/Pangolin.git \
+    && cd Pangolin \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && cmake --build . \
+    && make install
 
 # update pip
 # RUN curl -kL https://bootstrap.pypa.io/pip/2.7/get-pip.py | python  \
 #     && curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
 # RUN pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
-# # install ros packages
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#     ros-melodic-ros-core=1.4.1-0* \
-#     && rm -rf /var/lib/apt/lists/*
-# 
 # # setup entrypoint
 # COPY ./ros_entrypoint.sh /
 
