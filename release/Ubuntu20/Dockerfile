@@ -11,6 +11,8 @@ MAINTAINER yubao.liu.ra@tut.jp
 
 ENV DEBIAN_FRONTEND noninteractive
 
+WORKDIR /root
+
 # setup timezone
 RUN echo 'Etc/UTC' > /etc/timezone \
     && ln -s /usr/share/zoneinfo/Etc/GMT+8 /etc/localtime  \
@@ -31,17 +33,6 @@ COPY pip.conf ~/.pip/pip.conf
 ARG ROS_DISTRO
 # ENV ROS_DISTRO noetic
 ENV ROS_DISTRO ${ROS_DISTRO}
-
-# Install the Nvidia cuDNN library missing in the parent image.
-# https://gitlab.com/nvidia/cuda/blob/ubuntu16.04/10.1/devel/cudnn7/Dockerfile
-# "ARG" is needed here, cannot remove it
-# ARG CUDNN_VERSION
-# ENV NVIDIA_CUDNN_VERSION=${CUDNN_VERSION}
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#     libcudnn7=${CUDNN_VERSION} \
-#     libcudnn7-dev=${CUDNN_VERSION} \
-#     && apt-mark hold libcudnn7 \
-#     && rm -rf /var/lib/apt/lists/*
 
 # Install tools for development
 RUN apt-get update && \
@@ -84,9 +75,42 @@ RUN apt-get update && \
     libxkbcommon-dev  \
     libglew-dev \
     libgoogle-glog-dev \
+    proxychains4 \
     --fix-missing \
     && rm -rf /var/lib/apt/lists/*
 
+#--------------OpenGL -------------
+RUN dpkg --add-architecture i386 && \
+    apt-get update && apt-get install -y --no-install-recommends \
+        libxau6 libxau6:i386 \
+        libxdmcp6 libxdmcp6:i386 \
+        libxcb1 libxcb1:i386 \
+        libxext6 libxext6:i386 \
+        libx11-6 libx11-6:i386 && \
+    rm -rf /var/lib/apt/lists/*
+
+# nvidia-container-runtime
+ENV NVIDIA_VISIBLE_DEVICES \
+        ${NVIDIA_VISIBLE_DEVICES:-all}
+ENV NVIDIA_DRIVER_CAPABILITIES \
+        ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics,compat32,utility
+
+RUN echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
+    echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
+
+# COPY NGC-DL-CONTAINER-LICENSE /
+
+# Required for non-glvnd setups.
+ENV LD_LIBRARY_PATH /usr/lib/x86_64-linux-gnu:/usr/lib/i386-linux-gnu${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        pkg-config \
+        libglvnd-dev libglvnd-dev:i386 \
+        libgl1-mesa-dev libgl1-mesa-dev:i386 \
+        libegl1-mesa-dev libegl1-mesa-dev:i386 \
+        libgles2-mesa-dev libgles2-mesa-dev:i386 && \
+    rm -rf /var/lib/apt/lists/*
+#--------------------------------------------------
 
 #------------ Install ROS ---------------
 # RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -110,15 +134,6 @@ RUN apt-get install --no-install-recommends -y  \
 RUN apt install -y python3-rosdep \
     python3-rosinstall
 
-# Install tools for development
-RUN apt-get update && \
-    apt-get install -y lxterminal vim tmux
-
-
-# config ROS environment
-RUN rosdep init
-# RUN rosdep update
-
 RUN mkdir -p /root/catkin_ws/src \
     && bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash \
             && cd /root/catkin_ws \
@@ -126,9 +141,25 @@ RUN mkdir -p /root/catkin_ws/src \
     && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc \
     && echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
 
+
+# -------------Install proxychain --------
+# RUN git clone https://github.com/rofl0r/proxychains-ng.git \
+#     && cd proxychains-ng \
+#     && ./configure --prefix=/usr --sysconfdir=/etc \
+#     && make \
+#     && make install \
+#     && make install-config 
+
+COPY proxychains.conf /etc/proxychains.conf
+# ----------------------
+
+# config ROS environment
+RUN proxychains4 rosdep init
+RUN proxychains4 rosdep update
+
 # update pip
-RUN curl -kL https://bootstrap.pypa.io/pip/2.7/get-pip.py | python2  \
-    && curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
+# RUN curl -kL https://bootstrap.pypa.io/pip/2.7/get-pip.py | python2  \
+#     && curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
 
 #Pangolin
 # RUN git clone https://github.com/stevenlovegrove/Pangolin.git \
@@ -141,37 +172,35 @@ RUN git clone  https://gitee.com/yubaoliu/Pangolin.git \
     && make -j 3 \
     && make install
 
+# Install tools for development
+RUN apt-get update && \
+    apt-get install -y xterm libcanberra-gtk-module lxterminal vim tmux \
+    --fix-missing
+
 # Sophus
 # RUN git clone https://github.com/yubaoliu/Sophus.git \
-RUN git clone https://gitee.com/yubaoliu/Sophus.git \
-    && cd Sophus \
-    && git checkout master \
-    && mkdir build \
-    && cd build \
-    && cmake .. -DCMAKE_BUILD_TYPE=Release \
-    && make -j3 \
-    && make install 
+# RUN git clone https://gitee.com/yubaoliu/Sophus.git \
+#     && cd Sophus \
+#     && git checkout master \
+#     && mkdir build \
+#     && cd build \
+#     && cmake .. -DCMAKE_BUILD_TYPE=Release \
+#     && make -j3 \
+#     && make install 
 
  # G2O
 # RUN git clone https://github.com/yubaoliu/g2o.git \
-RUN git clone https://gitee.com/yubaoliu/g2o.git \
-    && cd g2o \
-    && mkdir build \
-    && cd build \
-    && cmake .. -DCMAKE_BUILD_TYPE=Debug \
-    && make -j 3 \
-    && make install \
-    && cmake .. -DCMAKE_BUILD_TYPE=Release \
-    && make -j 3 \
-    && make install
+# RUN git clone https://gitee.com/yubaoliu/g2o.git \
+#     && cd g2o \
+#     && mkdir build \
+#     && cd build \
+#     && cmake .. -DCMAKE_BUILD_TYPE=Debug \
+#     && make -j 3 \
+#     && make install \
+#     && cmake .. -DCMAKE_BUILD_TYPE=Release \
+#     && make -j 3 \
+#     && make install
   
-# RUN apt install  -y cmake-curses-gui \
-#     cmake-qt-gui \
-#     cmake-doc \
-#     libxkbcommon-dev  \
-#     libglew-dev \
-#     libgoogle-glog-dev
-
 # # install ros packages
 # RUN apt-get update && apt-get install -y --no-install-recommends \
 #     ros-melodic-ros-core=1.4.1-0* \

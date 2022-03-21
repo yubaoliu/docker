@@ -11,6 +11,8 @@ MAINTAINER yubao.liu.ra@tut.jp
 
 ENV DEBIAN_FRONTEND noninteractive
 
+WORKDIR /root
+
 # setup timezone
 RUN echo 'Etc/UTC' > /etc/timezone \
     && ln -s /usr/share/zoneinfo/Etc/GMT+8 /etc/localtime  \
@@ -31,17 +33,6 @@ COPY pip.conf ~/.pip/pip.conf
 ARG ROS_DISTRO
 # ENV ROS_DISTRO noetic
 ENV ROS_DISTRO ${ROS_DISTRO}
-
-# Install the Nvidia cuDNN library missing in the parent image.
-# https://gitlab.com/nvidia/cuda/blob/ubuntu16.04/10.1/devel/cudnn7/Dockerfile
-# "ARG" is needed here, cannot remove it
-# ARG CUDNN_VERSION
-# ENV NVIDIA_CUDNN_VERSION=${CUDNN_VERSION}
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#     libcudnn7=${CUDNN_VERSION} \
-#     libcudnn7-dev=${CUDNN_VERSION} \
-#     && apt-mark hold libcudnn7 \
-#     && rm -rf /var/lib/apt/lists/*
 
 # Install tools for development
 RUN apt-get update && \
@@ -84,6 +75,15 @@ RUN apt-get update && \
     --fix-missing \
     && rm -rf /var/lib/apt/lists/*
 
+# -------------Install proxychain --------
+RUN git clone https://github.com/rofl0r/proxychains-ng.git \
+    && cd proxychains-ng \
+    && ./configure --prefix=/usr --sysconfdir=/etc \
+    && make \
+    && make install \
+    && make install-config 
+
+COPY proxychains.conf /etc/proxychains.conf
 
 #------------ Install ROS ---------------
 # RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -116,12 +116,13 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 
 # Install tools for development
 RUN apt-get update && \
-    apt-get install -y lxterminal vim tmux
+    apt-get install -y lxterminal vim tmux \
+    --fix-missing
 
 
 # config ROS environment
-RUN rosdep init
-# RUN rosdep fix-permissions && rosdep update
+RUN proxychains4 rosdep init
+RUN proxychains4 rosdep update
 
 RUN mkdir -p /root/catkin_ws/src \
     && bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash \
@@ -131,8 +132,8 @@ RUN mkdir -p /root/catkin_ws/src \
     && echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
     
 # update pip
-RUN curl -kL https://bootstrap.pypa.io/pip/2.7/get-pip.py | python  \
-    && curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
+# RUN curl -kL https://bootstrap.pypa.io/pip/2.7/get-pip.py | python  \
+#     && curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
 
 # # install ros packages
 # RUN apt-get update && apt-get install -y --no-install-recommends \

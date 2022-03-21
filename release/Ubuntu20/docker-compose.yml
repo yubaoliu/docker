@@ -17,6 +17,7 @@ services:
     tty: true
     privileged: true
     command:
+        # - xterm
         - lxterminal
     environment:
         - DISPLAY

@@ -186,22 +186,6 @@ RUN git clone https://github.com/rofl0r/proxychains-ng.git \
     && make install \
     && make install-config 
 
-COPY proxychains.conf /etc/proxychains.conf
-# ----------------------
-
-# Editors
-RUN apt-get update && \
-    apt-get install -y  lxterminal \
-    vim \
-    tmux \
-    --fix-missing \
-    && rm -rf /var/lib/apt/lists/*
-
-## Proxy is needed
-# COPY ./rosdep/20-default.list /etc/ros/rosdep/sources.list.d/20-default.list
-# COPY ./rosdep/*  /etc/ros/rosdep/
-RUN proxychains4 rosdep init
-RUN proxychains4 rosdep update
 
 # Test GUI
 RUN git clone https://gitee.com/yubaoliu/Pangolin.git  \
@@ -213,6 +197,33 @@ RUN git clone https://gitee.com/yubaoliu/Pangolin.git  \
     && cmake --build . \
     && make install
 
+
+# Editors
+RUN apt-get update && \
+    apt-get install -y xterm lxterminal \
+    vim \
+    tmux \
+    --fix-missing \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY proxychains.conf /etc/proxychains.conf
+# ----------------------
+
+## Proxy is needed
+# COPY ./rosdep/20-default.list /etc/ros/rosdep/sources.list.d/20-default.list
+# COPY ./rosdep/*  /etc/ros/rosdep/
+RUN proxychains4 rosdep init
+RUN proxychains4 rosdep update
+
+RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key  add - \
+	&& add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" \
+	&& apt update && apt install -y code \
+    --fix-missing \
+    && rm -rf /var/lib/apt/lists/*
+
+# RUN mkdir /root/Extern
+# COPY Extern /root/Extern
+
 # update pip
 # RUN curl -kL https://bootstrap.pypa.io/pip/2.7/get-pip.py | python  \
 #     && curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
@@ -222,4 +233,12 @@ RUN git clone https://gitee.com/yubaoliu/Pangolin.git  \
 # COPY ./ros_entrypoint.sh /
 
 # ENTRYPOINT ["/ros_entrypoint.sh"]
+# From https://github.com/NVIDIA/nvidia-container-runtime/blob/master/README.md
+# compute: required for CUDA and OpenCL applications.
+# display: required for leveraging X11 display.
+# graphics: required for running OpenGL and Vulkan applications.
+# utility: required for using nvidia-smi and NVML.
+# video: required for using the Video Codec SDK. Required by ZED SDK.
+ENV NVIDIA_DRIVER_CAPABILITIES compute,display,graphics,utility,video
+
 CMD ["bash"]
