@@ -5,8 +5,11 @@
 
 # FROM nvidia/cudagl:11.4.0-devel-ubuntu20.04
 ARG CUDA_VERSION
+ARG CUDNN_VERSION
 
-FROM nvidia/cuda:${CUDA_VERSION}-devel-ubuntu20.04
+FROM ros:noetic-perception as ros-noetic
+FROM nvidia/cudagl:${CUDA_VERSION}-devel-ubuntu20.04
+# FROM nvidia/cuda:${CUDA_VERSION}-${CUDNN_VERSION}-devel-ubuntu20.04
 MAINTAINER yubao.liu.ra@tut.jp 
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -15,7 +18,7 @@ WORKDIR /root
 
 # setup timezone
 RUN echo 'Etc/UTC' > /etc/timezone \
-    && ln -s /usr/share/zoneinfo/Etc/GMT+8 /etc/localtime  \
+    && rm /etc/localtime && ln -s /usr/share/zoneinfo/Etc/GMT+8 /etc/localtime  \
     && apt-get update  \
     && apt-get install -q -y --no-install-recommends tzdata \
     && rm -rf /var/lib/apt/lists/*
@@ -24,15 +27,11 @@ RUN echo 'Etc/UTC' > /etc/timezone \
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
-COPY sources.list /etc/apt/sources.list
+COPY Extern/Ubuntu18/sources.list /etc/apt/sources.list
 
 RUN mkdir -p ~/.pip && touch ~/.pip/pip.conf
 
-COPY pip.conf ~/.pip/pip.conf
-
-ARG ROS_DISTRO
-# ENV ROS_DISTRO noetic
-ENV ROS_DISTRO ${ROS_DISTRO}
+COPY Extern/Ubuntu18/pip.conf ~/.pip/pip.conf
 
 # Install tools for development
 RUN apt-get update && \
@@ -72,45 +71,46 @@ RUN apt-get update && \
     cmake-curses-gui \
     cmake-qt-gui \
     cmake-doc \
+    libcanberra-gtk-module \
     libxkbcommon-dev  \
     libglew-dev \
     libgoogle-glog-dev \
     proxychains4 \
     --fix-missing \
     && rm -rf /var/lib/apt/lists/*
-
-#--------------OpenGL -------------
-RUN dpkg --add-architecture i386 && \
-    apt-get update && apt-get install -y --no-install-recommends \
-        libxau6 libxau6:i386 \
-        libxdmcp6 libxdmcp6:i386 \
-        libxcb1 libxcb1:i386 \
-        libxext6 libxext6:i386 \
-        libx11-6 libx11-6:i386 && \
-    rm -rf /var/lib/apt/lists/*
-
-# nvidia-container-runtime
-ENV NVIDIA_VISIBLE_DEVICES \
-        ${NVIDIA_VISIBLE_DEVICES:-all}
-ENV NVIDIA_DRIVER_CAPABILITIES \
-        ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics,compat32,utility
-
-RUN echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
-    echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
-
-# COPY NGC-DL-CONTAINER-LICENSE /
-
-# Required for non-glvnd setups.
-ENV LD_LIBRARY_PATH /usr/lib/x86_64-linux-gnu:/usr/lib/i386-linux-gnu${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        pkg-config \
-        libglvnd-dev libglvnd-dev:i386 \
-        libgl1-mesa-dev libgl1-mesa-dev:i386 \
-        libegl1-mesa-dev libegl1-mesa-dev:i386 \
-        libgles2-mesa-dev libgles2-mesa-dev:i386 && \
-    rm -rf /var/lib/apt/lists/*
-#--------------------------------------------------
+ 
+# #--------------OpenGL -------------
+# RUN dpkg --add-architecture i386 && \
+#     apt-get update && apt-get install -y --no-install-recommends \
+#         libxau6 libxau6:i386 \
+#         libxdmcp6 libxdmcp6:i386 \
+#         libxcb1 libxcb1:i386 \
+#         libxext6 libxext6:i386 \
+#         libx11-6 libx11-6:i386 && \
+#     rm -rf /var/lib/apt/lists/*
+# 
+# # nvidia-container-runtime
+# ENV NVIDIA_VISIBLE_DEVICES \
+#         ${NVIDIA_VISIBLE_DEVICES:-all}
+# ENV NVIDIA_DRIVER_CAPABILITIES \
+#         ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics,compat32,utility
+# 
+# RUN echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
+#     echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
+# 
+# # COPY NGC-DL-CONTAINER-LICENSE /
+# 
+# # Required for non-glvnd setups.
+# ENV LD_LIBRARY_PATH /usr/lib/x86_64-linux-gnu:/usr/lib/i386-linux-gnu${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+# 
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#         pkg-config \
+#         libglvnd-dev libglvnd-dev:i386 \
+#         libgl1-mesa-dev libgl1-mesa-dev:i386 \
+#         libegl1-mesa-dev libegl1-mesa-dev:i386 \
+#         libgles2-mesa-dev libgles2-mesa-dev:i386 && \
+#     rm -rf /var/lib/apt/lists/*
+# #--------------------------------------------------
 
 #------------ Install ROS ---------------
 # RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -118,21 +118,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 #     && apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 \
     # && apt-get update
 
+ARG ROS_DISTRO
+ENV ROS_DISTRO ${ROS_DISTRO}
+# ENV ROS_DISTRO noetic
+
+COPY --from=ros-noetic /opt/ros /opt/ros
+COPY --from=ros-noetic /etc/ros /etc/ros
+
 RUN /bin/bash -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
     && /bin/bash -c 'echo "deb http://mirrors.ustc.edu.cn/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
     && /bin/bash -c 'echo "deb http://mirrors.tuna.tsinghua.edu.cn/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
     # && /bin/bash -c 'echo "deb http://mirrors.sjtug.sjtu.edu.cn/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
-    && apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654  \
-    && apt update \
-    && apt install -f
+    && apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 
 # Install ROS-Base packages
 RUN apt-get install --no-install-recommends -y  \
     ros-${ROS_DISTRO}-desktop-full \
-    --fix-missing
-
-RUN apt install -y python3-rosdep \
-    python3-rosinstall
+    python3-rosdep \
+    python3-rosinstall \
+    --fix-missing \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /root/catkin_ws/src \
     && bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash \
@@ -140,7 +145,6 @@ RUN mkdir -p /root/catkin_ws/src \
             && catkin_make -DCMAKE_BUILD_TYPE=Release" \
     && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc \
     && echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
-
 
 # -------------Install proxychain --------
 # RUN git clone https://github.com/rofl0r/proxychains-ng.git \
@@ -150,7 +154,7 @@ RUN mkdir -p /root/catkin_ws/src \
 #     && make install \
 #     && make install-config 
 
-COPY proxychains.conf /etc/proxychains.conf
+COPY Extern/proxychains.conf /etc/proxychains.conf
 # ----------------------
 
 # config ROS environment
@@ -162,20 +166,26 @@ RUN proxychains4 rosdep update
 #     && curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
 
 #Pangolin
+COPY Extern/Pangolin /tmp/Pangolin
 # RUN git clone https://github.com/stevenlovegrove/Pangolin.git \
-RUN git clone  https://gitee.com/yubaoliu/Pangolin.git \
-    && cd Pangolin \
-    && git checkout v0.6 \
+# RUN git clone  https://gitee.com/yubaoliu/Pangolin.git \
+RUN cd /tmp/Pangolin \
+    # && git checkout v0.6 \
     && mkdir build \
     && cd build \
     && cmake .. -DCMAKE_BUILD_TYPE=Release \
     && make -j 3 \
-    && make install
+    && make install \
+    && rm -rf /tmp/Pangolin
 
 # Install tools for development
 RUN apt-get update && \
-    apt-get install -y xterm libcanberra-gtk-module lxterminal vim tmux \
-    --fix-missing
+    apt-get install -y xterm \
+    lxterminal \
+    vim \
+    tmux \
+    --fix-missing \
+    && rm -rf /var/lib/apt/lists/*
 
 # Sophus
 # RUN git clone https://github.com/yubaoliu/Sophus.git \
@@ -201,13 +211,39 @@ RUN apt-get update && \
 #     && make -j 3 \
 #     && make install
   
-# # install ros packages
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#     ros-melodic-ros-core=1.4.1-0* \
-#     && rm -rf /var/lib/apt/lists/*
-# 
-# # setup entrypoint
-# COPY ./ros_entrypoint.sh /
+# Config VIM, TMUX and Shell
+COPY Extern/dotfiles /root/dotfiles
 
-# ENTRYPOINT ["/ros_entrypoint.sh"]
+RUN apt update  \
+    && apt install -y zsh \
+    global \
+    ctags \
+    exuberant-ctags \
+    python-pygments \
+    vim-gtk \
+    astyle \
+    clang-format \
+    python-autopep8 \
+    --fix-missing
+
+# Install oh-my-zsh
+COPY Extern/oh-myzsh-install.sh /tmp/oh-myzsh-install.sh
+
+RUN /tmp/oh-myzsh-install.sh \
+    && chsh -s $(which zsh)
+
+RUN pip3 install autopep8  yapf \
+    && mkdir -p ~/.vim/autoload \
+    && cd ~  \
+    && ln -s /root/dotfiles/.vimrc \
+    && ln -s /root/dotfiles/.tmux.conf
+
+COPY Extern/plug.vim /root/.vim/autoload/plug.vim
+# --------------------------------------------
+
+# setup entrypoint
+COPY Extern/Ubuntu20/ros_entrypoint.sh /root/entrypoint.sh
+RUN chmod 755 /root/entrypoint.sh
+ENTRYPOINT ["/root/entrypoint.sh"]
+
 CMD ["bash"]

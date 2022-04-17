@@ -1,0 +1,44 @@
+version: '2.3'
+services:
+  ubuntu18-cuda11-3-0:
+    image: yubao/ubuntu18:cuda11.3.0
+    # container_name: root_ros_noetic
+    build:
+        context: ..
+        dockerfile: Ubuntu18/Dockerfile
+        args:
+            CUDA_VERSION: 11.3.0
+            # CUDNN_VERSION: cudnn8
+            ROS_DISTRO: melodic
+            # http_proxy: ${HTTP_PROXY}
+            # https_proxy: ${HTTPS_PROXY}
+            # CUDNN_VERSION: 7
+            # cudnn_version: 7
+            # ubuntu_version: 16.04
+    runtime: nvidia
+    stdin_open: true
+    tty: true
+    network_mode: host
+    privileged: true
+    command:
+        - xterm
+        # - lxterminal
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+        # - http_proxy=${HTTP_PROXY}
+        # - https_proxy=${HTTPS_PROXY}
+    devices:
+        - /dev/dri
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        - ~/.Xauthority:/root/.Xauthority
+        # - ubuntu18_cuda11-4-2:/root
+        # - /usr/lib/nvidia-cuda-toolkit:/usr/lib/nvidia-cuda-toolkit
+        - ~/Project/docker/Extern:/root/Extern
+        # - yubao_ubuntu18_cuda11:/root
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+# volumes:
+#     yubao_ubuntu18_cuda11:

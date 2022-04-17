@@ -1,0 +1,15 @@
+[submodule "Extern/proxychains-ng"]
+	path = Extern/proxychains-ng
+	url = https://github.com/rofl0r/proxychains-ng.git
+[submodule "Extern/CMake"]
+	path = Extern/CMake
+	url = https://github.com/Kitware/CMake.git
+[submodule "Extern/Pangolin"]
+	path = Extern/Pangolin
+	url = https://github.com/stevenlovegrove/Pangolin.git
+[submodule "Extern/dotfiles"]
+	path = Extern/dotfiles
+	url = https://github.com/yubaoliu/dotfiles.git
+[submodule "Extern/rbenv"]
+	path = Extern/rbenv
+	url = https://ghproxy.com/https://github.com/sstephenson/rbenv.git
