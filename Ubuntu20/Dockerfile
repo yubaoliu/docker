@@ -134,7 +134,7 @@ RUN /bin/bash -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -cs
     && apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 
 # Install ROS-Base packages
-RUN apt-get install --no-install-recommends -y  \
+RUN apt-get update && apt-get install --no-install-recommends -y  \
     ros-${ROS_DISTRO}-desktop-full \
     python3-rosdep \
     python3-rosinstall \
@@ -156,13 +156,7 @@ RUN mkdir -p /root/catkin_ws/src \
 #     && make install \
 #     && make install-config 
 
-COPY Extern/proxychains.conf /etc/proxychains.conf
-# ----------------------
-
-# config ROS environment
-RUN proxychains4 rosdep init
-RUN proxychains4 rosdep update
-
+ 
 # update pip
 # RUN curl -kL https://bootstrap.pypa.io/pip/2.7/get-pip.py | python2  \
 #     && curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
@@ -186,9 +180,15 @@ RUN apt-get update && \
     lxterminal \
     vim \
     tmux \
+    proxychains4 \
     --fix-missing \
     && rm -rf /var/lib/apt/lists/*
 
+# COPY Extern/proxychains.conf /etc/proxychains.conf
+# # config ROS environment
+# RUN proxychains4 rosdep init
+# RUN proxychains4 rosdep update
+#
 # Sophus
 # RUN git clone https://github.com/yubaoliu/Sophus.git \
 # RUN git clone https://gitee.com/yubaoliu/Sophus.git \
@@ -233,7 +233,6 @@ RUN apt update  \
     vim-gtk \
     astyle \
     clang-format \
-    python-autopep8 \
     --fix-missing
 
 # Install oh-my-zsh
@@ -252,7 +251,7 @@ COPY Extern/plug.vim /root/.vim/autoload/plug.vim
 # --------------------------------------------
 
 # setup entrypoint
-COPY Extern/Ubuntu20/ros_entrypoint.sh /root/entrypoint.sh
+COPY Extern/Ubuntu20/entrypoint.sh /root/entrypoint.sh
 RUN chmod 755 /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
 
