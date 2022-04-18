@@ -18,7 +18,8 @@ WORKDIR /root
 
 # setup timezone
 RUN echo 'Etc/UTC' > /etc/timezone \
-    && rm /etc/localtime && ln -s /usr/share/zoneinfo/Etc/GMT+8 /etc/localtime  \
+    && rm /etc/localtime -f \
+    && ln -s /usr/share/zoneinfo/Etc/GMT+8 /etc/localtime  \
     && apt-get update  \
     && apt-get install -q -y --no-install-recommends tzdata \
     && rm -rf /var/lib/apt/lists/*
@@ -27,7 +28,7 @@ RUN echo 'Etc/UTC' > /etc/timezone \
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
-COPY Extern/Ubuntu18/sources.list /etc/apt/sources.list
+COPY Extern/Ubuntu20/sources.list /etc/apt/sources.list
 
 RUN mkdir -p ~/.pip && touch ~/.pip/pip.conf
 
@@ -36,49 +37,50 @@ COPY Extern/Ubuntu18/pip.conf ~/.pip/pip.conf
 # Install tools for development
 RUN apt-get update && \
     apt-get install -y software-properties-common \
+    wget \
+    curl \
+    git \
+    libssl-dev \
+    apt-transport-https \
+    ca-certificates \
+    qt5-default \
+    --fix-missing \
+    && rm -rf /var/lib/apt/lists/*
+ 
+# Install basic depencies
+RUN apt-get update && \
+    apt-get install -y software-properties-common \
     sudo \
     byobu \
     gdb \
     htop \
     locate \
-    wget \
-    git \
-    curl \
     zip \
     unzip \
+    build-essential \
     g++ \
-    libevent-dev \
     bison \
     byacc \
-    autotools-dev \
-    automake \
     libgdbm-dev \
-    libssl-dev \
+    libevent-dev \
+    autotools-dev \
     libreadline-dev \
-    zlib1g-dev \
-    autoconf \
-    bison \
     libyaml-dev \
+    zlib1g-dev \
+    libncurses5-dev \
+    libreadline-dev \
+    libffi-dev \
     dirmngr \
     gnupg \
-    git \
-    build-essential \
-    libffi-dev \
-    libncurses5-dev \
-    libssl-dev \
-    libreadline-dev \
-    zlib1g-dev \
-    cmake-curses-gui \
-    cmake-qt-gui \
-    cmake-doc \
-    libcanberra-gtk-module \
-    libxkbcommon-dev  \
-    libglew-dev \
-    libgoogle-glog-dev \
-    proxychains4 \
+    inetutils-tools \
+    inetutils-ping \
+    python3-pip \
+    python3-distutils \
+    libxkbcommon-dev \
+    libc++-dev  \
     --fix-missing \
     && rm -rf /var/lib/apt/lists/*
- 
+
 # #--------------OpenGL -------------
 # RUN dpkg --add-architecture i386 && \
 #     apt-get update && apt-get install -y --no-install-recommends \
@@ -210,7 +212,15 @@ RUN apt-get update && \
 #     && cmake .. -DCMAKE_BUILD_TYPE=Release \
 #     && make -j 3 \
 #     && make install
-  
+
+ # Install VScode
+RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key  add - \
+	&& add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" \
+	&& apt update && apt install -y code \
+    --fix-missing \
+    && rm -rf /var/lib/apt/lists/*
+
+ 
 # Config VIM, TMUX and Shell
 COPY Extern/dotfiles /root/dotfiles
 

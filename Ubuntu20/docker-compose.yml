@@ -28,7 +28,7 @@ services:
         - /tmp/.X11-unix:/tmp/.X11-unix:rw
         - ~/.Xauthority:/root/.Xauthority
         # - /usr/lib/nvidia-cuda-toolkit:/usr/lib/nvidia-cuda-toolkit
-        - yubao_ubuntu20_cuda11:/root
+        # - yubao_ubuntu20_cuda11:/root
 
-volumes:
-    yubao_ubuntu20_cuda11:
+# volumes:
+#     yubao_ubuntu20_cuda11:

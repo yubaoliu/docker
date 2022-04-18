@@ -18,7 +18,7 @@ WORKDIR /root
 
 # setup timezone
 RUN echo 'Etc/UTC' > /etc/timezone \
-    && rm /etc/localtime \
+    && rm /etc/localtime -f \
     && ln -s /usr/share/zoneinfo/Etc/GMT+8 /etc/localtime  \
     && apt-get update  \
     && apt-get install -q -y --no-install-recommends tzdata \
@@ -251,6 +251,13 @@ RUN cd /tmp/Pangolin \
 # update pip
 # RUN curl -kL https://bootstrap.pypa.io/pip/2.7/get-pip.py | python  \
 #     && curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
+
+# Install VScode
+RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key  add - \
+	&& add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" \
+	&& apt update && apt install -y code \
+    --fix-missing \
+    && rm -rf /var/lib/apt/lists/*
 
 # Config VIM, TMUX and Shell
 COPY Extern/dotfiles /root/dotfiles
