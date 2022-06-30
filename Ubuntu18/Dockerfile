@@ -217,22 +217,17 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 
-# Install VScode
-RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key  add - \
-	&& add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" \
-	&& apt update && apt install -y code \
-    --fix-missing \
-    && rm -rf /var/lib/apt/lists/*
-
 # Test GUI
-RUN git clone https://gitee.com/yubaoliu/Pangolin.git  \
+COPY Extern/Pangolin /tmp/Pangolin
+# RUN git clone https://gitee.com/yubaoliu/Pangolin.git  \
 # RUN git clone https://github.com/stevenlovegrove/Pangolin.git \
-    && cd Pangolin \
+RUN cd /tmp/Pangolin \
     && mkdir build \
     && cd build \
     && cmake .. \
     && cmake --build . \
-    && make install
+    && make install \
+    && rm /tmp/Pangolin -r
 
 # RUN mkdir /root/Extern
 # COPY Extern /root/Extern
@@ -241,6 +236,9 @@ RUN git clone https://gitee.com/yubaoliu/Pangolin.git  \
 # RUN curl -kL https://bootstrap.pypa.io/pip/2.7/get-pip.py | python  \
 #     && curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
 # RUN pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+
+RUN rm /etc/apt/sources.list.d/cuda.list \
+    && rm /etc/apt/sources.list.d/nvidia-ml.list
 
 # Config VIM, TMUX and Shell
 COPY Extern/dotfiles /root/dotfiles
@@ -270,6 +268,40 @@ RUN pip3 install autopep8  yapf \
     && ln -s /root/dotfiles/.tmux.conf
 
 COPY Extern/plug.vim /root/.vim/autoload/plug.vim
+
+# ssh
+RUN apt update \
+    && apt install -y net-tools \
+    openssh-server  \
+    libceres-dev \
+    --fix-missing \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN sed -i '/^#/!s/PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config \
+    && sudo service ssh restart \
+    && echo "root:abcd1234"|chpasswd
+
+
+# Install VScode
+COPY Extern/vscode /root/vscode
+
+RUN  wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key  add - \
+	&& add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" \
+	&& apt update && apt install -y code \
+    --fix-missing \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://code-server.dev/install.sh | sh -s -- --dry-run
+# RUN curl -fsSL https://code-server.dev/install.sh | sh &
+    # && wget -c https://github.com/coder/code-server/releases/download/v4.4.0/code-server-4.4.0-linux-amd64.tar.gz \
+
+# RUN cd /root/vscode \
+#     && wget -c https://github.com/microsoft/vscode-cpptools/releases/download/v1.10.7/cpptools-linux.vsix \
+#     && code --no-sandbox --user-data-dir /root --install-extension cpptools-linux.vsix  \
+#     && code --no-sandbox --user-data-dir /root --install-extension ms-iot.vscode-ros-0.8.2.vsix \
+#     && code --no-sandbox --user-data-dir /root --install-extension twxs.cmake-0.0.17.vsix
+
+
 # --------------------------------------------
 
 # setup entrypoint

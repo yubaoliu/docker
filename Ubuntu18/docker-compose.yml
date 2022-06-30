@@ -36,6 +36,7 @@ services:
         # - ubuntu18_cuda11-4-2:/root
         # - /usr/lib/nvidia-cuda-toolkit:/usr/lib/nvidia-cuda-toolkit
         - ~/Project/docker/Extern:/root/Extern
+        - ~/.vscode/extensions:/root/.vscode/extensions
         # - yubao_ubuntu18_cuda11:/root
     dns:
       - 8.8.8.8
