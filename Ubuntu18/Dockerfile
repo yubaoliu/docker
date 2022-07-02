@@ -292,6 +292,8 @@ RUN  wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-ke
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://code-server.dev/install.sh | sh -s -- --dry-run
+RUN wget -c https://github.com/coder/code-server/releases/download/v4.4.0/code-server_4.4.0_amd64.deb \
+    && dpkg -i code-server_4.4.0_amd64.deb 
 # RUN curl -fsSL https://code-server.dev/install.sh | sh &
     # && wget -c https://github.com/coder/code-server/releases/download/v4.4.0/code-server-4.4.0-linux-amd64.tar.gz \
 

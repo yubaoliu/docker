@@ -212,15 +212,10 @@ RUN apt-get update && \
 #     && cmake .. -DCMAKE_BUILD_TYPE=Release \
 #     && make -j 3 \
 #     && make install
-
- # Install VScode
-RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key  add - \
-	&& add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" \
-	&& apt update && apt install -y code \
-    --fix-missing \
-    && rm -rf /var/lib/apt/lists/*
-
  
+RUN rm /etc/apt/sources.list.d/cuda.list \
+    && rm /etc/apt/sources.list.d/nvidia-ml.list
+
 # Config VIM, TMUX and Shell
 COPY Extern/dotfiles /root/dotfiles
 
@@ -249,6 +244,26 @@ RUN pip3 install autopep8  yapf \
 
 COPY Extern/plug.vim /root/.vim/autoload/plug.vim
 # --------------------------------------------
+
+# ssh
+RUN apt update \
+    && apt install -y net-tools \
+    openssh-server  \
+    libceres-dev \
+    --fix-missing \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN sed -i '/^#/!s/PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config \
+    && sudo service ssh restart \
+    && echo "root:abcd1234"|chpasswd
+
+ # Install VScode
+RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key  add - \
+	&& add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" \
+	&& apt update && apt install -y code \
+    --fix-missing \
+    && rm -rf /var/lib/apt/lists/*
+
 
 # setup entrypoint
 COPY Extern/Ubuntu20/entrypoint.sh /root/entrypoint.sh
