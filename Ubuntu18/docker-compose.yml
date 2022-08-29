@@ -10,6 +10,7 @@ services:
             CUDA_VERSION: 11.3.0
             # CUDNN_VERSION: cudnn8
             ROS_DISTRO: melodic
+            VSCODE_COMMIT_ID: da76f93349a72022ca4670c1b84860304616aaa2
             # http_proxy: ${HTTP_PROXY}
             # https_proxy: ${HTTPS_PROXY}
             # CUDNN_VERSION: 7
@@ -37,6 +38,9 @@ services:
         # - /usr/lib/nvidia-cuda-toolkit:/usr/lib/nvidia-cuda-toolkit
         - ~/Project/docker/Extern:/root/Extern
         - ~/.vscode/extensions:/root/.vscode/extensions
+        - ~/.vimrc:/root/.vimrc
+        - ~/.vim:/root/.vim
+        - ~/.tmux.conf:/root/.tmux.conf
         # - yubao_ubuntu18_cuda11:/root
     dns:
       - 8.8.8.8

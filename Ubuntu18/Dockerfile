@@ -94,17 +94,17 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 #---------------------------------------
-COPY Extern/proxychains-ng /tmp/proxychains-ng
-
-# -------------Install proxychain --------
-# RUN git clone https://github.com/rofl0r/proxychains-ng.git \
-RUN cd /tmp/proxychains-ng \
-    && ./configure --prefix=/usr --sysconfdir=/etc \
-    && make \
-    && make install \
-    && make install-config  \
-    && cd .. \
-    && rm /tmp/proxychains-ng -rf
+# COPY Extern/proxychains-ng /tmp/proxychains-ng
+# 
+# # -------------Install proxychain --------
+# # RUN git clone https://github.com/rofl0r/proxychains-ng.git \
+# RUN cd /tmp/proxychains-ng \
+#     && ./configure --prefix=/usr --sysconfdir=/etc \
+#     && make \
+#     && make install \
+#     && make install-config  \
+#     && cd .. \
+#     && rm /tmp/proxychains-ng -rf
 
 # ##-------------- OpenGL (https://gitlab.com/nvidia/container-images/opengl/-/blob/ubuntu18.04/base/Dockerfile)--------------------
 # RUN dpkg --add-architecture i386 && \
@@ -136,6 +136,10 @@ RUN cd /tmp/proxychains-ng \
 #         libgles2-mesa-dev libgles2-mesa-dev:i386 && \
 #     rm -rf /var/lib/apt/lists/*
 # ##----------------------------------
+
+# RUN apt-key del A4B469963BF863CC
+RUN rm /etc/apt/sources.list.d/cuda.list -r \
+    && rm /etc/apt/sources.list.d/nvidia-ml.list -f
 
 # Dependences and tools, e.g., OpenGL
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -237,8 +241,8 @@ RUN cd /tmp/Pangolin \
 #     && curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
 # RUN pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
-RUN rm /etc/apt/sources.list.d/cuda.list \
-    && rm /etc/apt/sources.list.d/nvidia-ml.list
+# RUN rm /etc/apt/sources.list.d/cuda.list \
+#     && rm /etc/apt/sources.list.d/nvidia-ml.list
 
 # Config VIM, TMUX and Shell
 COPY Extern/dotfiles /root/dotfiles
@@ -253,16 +257,17 @@ RUN apt update  \
     astyle \
     clang-format \
     python-autopep8 \
-    --fix-missing
+    --fix-missing \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip3 install autopep8  yapf
 
 # Install oh-my-zsh
-COPY Extern/oh-myzsh-install.sh /tmp/oh-myzsh-install.sh
+# COPY Extern/oh-myzsh-install.sh /tmp/oh-myzsh-install.sh
+# 
+# RUN /tmp/oh-myzsh-install.sh \
+#     && chsh -s $(which zsh)
 
-RUN /tmp/oh-myzsh-install.sh \
-    && chsh -s $(which zsh)
-
-RUN pip3 install autopep8  yapf \
-    && mkdir -p ~/.vim/autoload \
+RUN mkdir -p ~/.vim/autoload \
     && cd ~  \
     && ln -s /root/dotfiles/.vimrc \
     && ln -s /root/dotfiles/.tmux.conf
@@ -273,14 +278,12 @@ COPY Extern/plug.vim /root/.vim/autoload/plug.vim
 RUN apt update \
     && apt install -y net-tools \
     openssh-server  \
-    libceres-dev \
     --fix-missing \
     && rm -rf /var/lib/apt/lists/*
 
 RUN sed -i '/^#/!s/PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config \
     && sudo service ssh restart \
     && echo "root:abcd1234"|chpasswd
-
 
 # Install VScode
 COPY Extern/vscode /root/vscode
@@ -291,9 +294,22 @@ RUN  wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-ke
     --fix-missing \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsSL https://code-server.dev/install.sh | sh -s -- --dry-run
-RUN wget -c https://github.com/coder/code-server/releases/download/v4.4.0/code-server_4.4.0_amd64.deb \
-    && dpkg -i code-server_4.4.0_amd64.deb 
+ARG VSCODE_COMMIT_ID
+RUN mkdir -p ~/.vscode-server/bin \
+    && rm ~/.vscode-server/bin/* -rf \
+    && cd ~/.vscode-server/bin  \
+    && wget -c https://vscode.cdn.azure.cn/stable/${VSCODE_COMMIT_ID}/vscode-server-linux-x64.tar.gz \
+    && tar -zxf vscode-server-linux-x64.tar.gz \
+    && mv vscode-server-linux-x64 ${VSCODE_COMMIT_ID} 
+
+RUN apt-get update \
+    && apt install -y libceres-dev \
+    --fix-missing \
+    && rm -rf /var/lib/apt/lists/*
+
+# RUN curl -fsSL https://code-server.dev/install.sh | sh -s -- --dry-run
+# RUN wget -c https://github.com/coder/code-server/releases/download/v4.4.0/code-server_4.4.0_amd64.deb \
+#     && dpkg -i code-server_4.4.0_amd64.deb 
 # RUN curl -fsSL https://code-server.dev/install.sh | sh &
     # && wget -c https://github.com/coder/code-server/releases/download/v4.4.0/code-server-4.4.0-linux-amd64.tar.gz \
 
@@ -318,6 +334,6 @@ ENTRYPOINT ["/root/entrypoint.sh"]
 # graphics: required for running OpenGL and Vulkan applications.
 # utility: required for using nvidia-smi and NVML.
 # video: required for using the Video Codec SDK. Required by ZED SDK.
-# ENV NVIDIA_DRIVER_CAPABILITIES compute,display,graphics,utility,video
+ENV NVIDIA_DRIVER_CAPABILITIES compute,display,graphics,utility,video
 
 CMD ["bash"]
