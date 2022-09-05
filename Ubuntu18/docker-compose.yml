@@ -36,11 +36,11 @@ services:
         - ~/.Xauthority:/root/.Xauthority
         # - ubuntu18_cuda11-4-2:/root
         # - /usr/lib/nvidia-cuda-toolkit:/usr/lib/nvidia-cuda-toolkit
-        - ~/Project/docker/Extern:/root/Extern
-        - ~/.vscode/extensions:/root/.vscode/extensions
-        - ~/.vimrc:/root/.vimrc
-        - ~/.vim:/root/.vim
-        - ~/.tmux.conf:/root/.tmux.conf
+        # - ~/Project/docker/Extern:/root/Extern
+        # - ~/.vscode/extensions:/root/.vscode/extensions
+        # - ~/.vimrc:/root/.vimrc
+        # - ~/.vim:/root/.vim
+        # - ~/.tmux.conf:/root/.tmux.conf
         # - yubao_ubuntu18_cuda11:/root
     dns:
       - 8.8.8.8

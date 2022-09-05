@@ -14,12 +14,15 @@ MAINTAINER yubao.liu.ra@tut.jp
 
 ENV DEBIAN_FRONTEND noninteractive
 
-WORKDIR /root
+# RUN apt-key del A4B469963BF863CC
+RUN rm /etc/apt/sources.list.d/cuda.list -r \
+    && rm /etc/apt/sources.list.d/nvidia-ml.list -f
 
 # setup timezone
 RUN echo 'Etc/UTC' > /etc/timezone \
-    && rm /etc/localtime -f && ln -s /usr/share/zoneinfo/Etc/GMT+8 /etc/localtime  \
-    && apt-get update  \
+    && rm /etc/localtime -f \
+    && ln -s /usr/share/zoneinfo/Etc/GMT+8 /etc/localtime  \
+    && apt-get update -y  \
     && apt-get install -q -y --no-install-recommends tzdata \
     && rm -rf /var/lib/apt/lists/*
 
@@ -31,15 +34,12 @@ ENV LC_ALL C.UTF-8
 
 COPY Extern/Ubuntu18/sources.list /etc/apt/sources.list
 
-RUN mkdir -p ~/.pip && touch ~/.pip/pip.conf
-
-COPY Extern/Ubuntu18/pip.conf ~/.pip/pip.conf
-
 # Install tools for development
 RUN apt-get update && \
     apt-get install -y software-properties-common \
     wget \
     curl \
+    sudo \
     git \
     libssl-dev \
     software-properties-common \
@@ -48,20 +48,36 @@ RUN apt-get update && \
     qt5-default \
     --fix-missing \
     && rm -rf /var/lib/apt/lists/*
- 
+
+ # create a non-root user
+ARG USER_ID=1000
+RUN useradd -m --no-log-init --system  --uid ${USER_ID} ubuntu
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers \
+    && echo "ubuntu:abcd1234"|sudo chpasswd \
+    && sudo usermod -a -G sudo ubuntu 
+
+USER ubuntu
+WORKDIR /home/ubuntu
+
+RUN mkdir -p ~/.pip && touch ~/.pip/pip.conf
+
+COPY --chown=ubuntu:ubuntu Extern/Ubuntu18/pip.conf ~/.pip/pip.conf
+
 # Install cmake
-COPY Extern/CMake /tmp/CMake
-RUN apt-get purge -y cmake \
+COPY --chown=ubuntu:ubuntu Extern/CMake /tmp/CMake
+RUN sudo apt-get purge -y cmake \
     && cd /tmp/CMake \
     # && wget -c https://github.com/Kitware/CMake/releases/download/v3.18.1/cmake-3.18.1.tar.gz \
     # && tar -xzvf cmake-3.18.1.tar.gz \
     # && cd /tmp/cmake-3.18.1 \
-    && ./bootstrap --qt-gui && make && make install \
+    && ./bootstrap --qt-gui \
+    && make \
+    && sudo make install \
     && rm /tmp/CMake  -rf 
 
 # Install basic depencies
-RUN apt-get update && \
-    apt-get install -y software-properties-common \
+RUN sudo apt-get update && \
+    sudo apt-get install -y software-properties-common \
     sudo \
     byobu \
     gdb \
@@ -86,12 +102,17 @@ RUN apt-get update && \
     gnupg \
     inetutils-tools \
     inetutils-ping \
+    python3-dev \
     python3-pip \
     python3-distutils \
+    python3-opencv \
     libxkbcommon-dev \
     libc++-dev  \
+    ctags \
+    net-tools \
+    openssh-server  \
     --fix-missing \
-    && rm -rf /var/lib/apt/lists/*
+    && sudo rm -rf /var/lib/apt/lists/*
 
 #---------------------------------------
 # COPY Extern/proxychains-ng /tmp/proxychains-ng
@@ -137,12 +158,9 @@ RUN apt-get update && \
 #     rm -rf /var/lib/apt/lists/*
 # ##----------------------------------
 
-# RUN apt-key del A4B469963BF863CC
-RUN rm /etc/apt/sources.list.d/cuda.list -r \
-    && rm /etc/apt/sources.list.d/nvidia-ml.list -f
-
 # Dependences and tools, e.g., OpenGL
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN sudo apt-get update \
+    && sudo apt-get install -y --no-install-recommends \
     libjpeg-dev libpng-dev \
     libavcodec-dev libavutil-dev libavformat-dev libswscale-dev libavdevice-dev \
     libdc1394-22-dev libraw1394-dev libopenni-dev   \
@@ -157,7 +175,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libboost-filesystem-dev \
     libwayland-dev \
     --fix-missing \
-    && rm -rf /var/lib/apt/lists/*
+    && sudo rm -rf /var/lib/apt/lists/*
 
 
 #------------ Install ROS ---------------
@@ -170,6 +188,7 @@ ARG ROS_DISTRO
 # ENV ROS_DISTRO melodic
 ENV ROS_DISTRO ${ROS_DISTRO}
 
+USER root
 RUN /bin/bash -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
     && /bin/bash -c 'echo "deb http://mirrors.ustc.edu.cn/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
     && /bin/bash -c 'echo "deb http://mirrors.tuna.tsinghua.edu.cn/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
@@ -180,29 +199,30 @@ COPY --from=ros-melodic /opt/ros /opt/ros
 COPY --from=ros-melodic /etc/ros /etc/ros
 
 # Install ROS-Base packages
-RUN apt update \
-    && apt-get install --no-install-recommends -y  \
+RUN sudo apt update \
+    && sudo apt-get install --no-install-recommends -y  \
     ros-${ROS_DISTRO}-desktop-full \
     --fix-missing \
-    && rm -rf /var/lib/apt/lists/*
+    && sudo rm -rf /var/lib/apt/lists/*
 
 # Install ROS bootstrap tools
-RUN apt-get update && apt-get install --no-install-recommends -y \
+RUN sudo apt-get update \
+    && sudo apt-get install --no-install-recommends -y \
     python-rosdep \
     python-rosinstall \
     python-vcstools \
     python-rosinstall-generator \
     python-wstool \
     --fix-missing \
-    && rm -rf /var/lib/apt/lists/*
+    && sudo rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /root/catkin_ws/src \
+USER ubuntu
+RUN mkdir -p $HOME/catkin_ws/src \
     && bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash \
-            && cd /root/catkin_ws \
+            && cd $HOME/catkin_ws \
             && catkin_make -DCMAKE_BUILD_TYPE=Release" \
-    && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc \
-    && echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
-
+    && echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> $HOME/.bashrc \
+    && echo "source $HOME/catkin_ws/devel/setup.bash" >> $HOME/.bashrc
 
 # COPY proxychains.conf /etc/proxychains.conf
 
@@ -213,16 +233,15 @@ RUN mkdir -p /root/catkin_ws/src \
 # RUN proxychains4 rosdep update
 
 # Editors
-RUN apt-get update && \
-    apt-get install -y xterm lxterminal \
+RUN sudo apt-get update && \
+    sudo apt-get install -y xterm lxterminal \
     vim \
     tmux \
     --fix-missing \
-    && rm -rf /var/lib/apt/lists/*
-
+    && sudo rm -rf /var/lib/apt/lists/*
 
 # Test GUI
-COPY Extern/Pangolin /tmp/Pangolin
+COPY --chown=ubuntu:ubuntu Extern/Pangolin /tmp/Pangolin
 # RUN git clone https://gitee.com/yubaoliu/Pangolin.git  \
 # RUN git clone https://github.com/stevenlovegrove/Pangolin.git \
 RUN cd /tmp/Pangolin \
@@ -230,11 +249,8 @@ RUN cd /tmp/Pangolin \
     && cd build \
     && cmake .. \
     && cmake --build . \
-    && make install \
+    && sudo make install \
     && rm /tmp/Pangolin -r
-
-# RUN mkdir /root/Extern
-# COPY Extern /root/Extern
 
 # update pip
 # RUN curl -kL https://bootstrap.pypa.io/pip/2.7/get-pip.py | python  \
@@ -244,13 +260,9 @@ RUN cd /tmp/Pangolin \
 # RUN rm /etc/apt/sources.list.d/cuda.list \
 #     && rm /etc/apt/sources.list.d/nvidia-ml.list
 
-# Config VIM, TMUX and Shell
-COPY Extern/dotfiles /root/dotfiles
-
-RUN apt update  \
-    && apt install -y zsh \
+RUN sudo apt update  \
+    && sudo apt install -y zsh \
     global \
-    ctags \
     exuberant-ctags \
     python-pygments \
     vim-gtk \
@@ -258,54 +270,57 @@ RUN apt update  \
     clang-format \
     python-autopep8 \
     --fix-missing \
-    && rm -rf /var/lib/apt/lists/* \
+    && sudo rm -rf /var/lib/apt/lists/* \
     && pip3 install autopep8  yapf
 
-# Install oh-my-zsh
-# COPY Extern/oh-myzsh-install.sh /tmp/oh-myzsh-install.sh
-# 
-# RUN /tmp/oh-myzsh-install.sh \
-#     && chsh -s $(which zsh)
-
-RUN mkdir -p ~/.vim/autoload \
-    && cd ~  \
-    && ln -s /root/dotfiles/.vimrc \
-    && ln -s /root/dotfiles/.tmux.conf
-
-COPY Extern/plug.vim /root/.vim/autoload/plug.vim
-
 # ssh
-RUN apt update \
-    && apt install -y net-tools \
-    openssh-server  \
-    --fix-missing \
-    && rm -rf /var/lib/apt/lists/*
+# RUN apt update \
+#     && apt install -y net-tools \
+#     openssh-server  \
+#     --fix-missing \
+#     && rm -rf /var/lib/apt/lists/*
 
-RUN sed -i '/^#/!s/PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config \
+RUN sudo sed -i '/^#/!s/PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config \
     && sudo service ssh restart \
-    && echo "root:abcd1234"|chpasswd
+    && echo "root:abcd1234"| sudo chpasswd
 
-# Install VScode
-COPY Extern/vscode /root/vscode
 
-RUN  wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key  add - \
-	&& add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" \
-	&& apt update && apt install -y code \
+RUN sudo apt-get update -y \
+    && sudo apt install -y libceres-dev \
+    xdg-utils \
     --fix-missing \
-    && rm -rf /var/lib/apt/lists/*
+    && sudo rm -rf /var/lib/apt/lists/*
+
+# RUN wget -c https://az764295.vo.msecnd.net/stable/e4503b30fc78200f846c62cf8091b76ff5547662/code_1.70.2-1660629410_amd64.deb \
+#     && dpkg -i code_1.70.2-1660629410_amd64.deb
+# 
+# RUN apt install libxkbfile
+
+# RUN  wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key  add - \
+# 	&& add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" \
+# 	&& apt update && apt install -y code \
+#     --fix-missing \
+#     && rm -rf /var/lib/apt/lists/*
 
 ARG VSCODE_COMMIT_ID
-RUN mkdir -p ~/.vscode-server/bin \
-    && rm ~/.vscode-server/bin/* -rf \
+
+RUN rm ~/.vscode-server/bin/* -rf \
+    && mkdir -p ~/.vscode-server/bin \
     && cd ~/.vscode-server/bin  \
-    && wget -c https://vscode.cdn.azure.cn/stable/${VSCODE_COMMIT_ID}/vscode-server-linux-x64.tar.gz \
+    && wget -c https://vscode.cdn.azure.cn/stable/${VSCODE_COMMIT_ID}/vscode-server-linux-x64.tar.gz --no-check-certificate \
     && tar -zxf vscode-server-linux-x64.tar.gz \
     && mv vscode-server-linux-x64 ${VSCODE_COMMIT_ID} 
 
-RUN apt-get update \
-    && apt install -y libceres-dev \
-    --fix-missing \
-    && rm -rf /var/lib/apt/lists/*
+ENV PATH ${PATH}:/home/ubuntu/.vscode-server/bin/${VSCODE_COMMIT_ID}/bin
+
+# pycharm 
+RUN wget -c https://download.jetbrains.com.cn/python/pycharm-community-2022.2.1.tar.gz --no-check-certificate \
+    && tar -zxvf pycharm-community-2022.2.1.tar.gz 
+
+ENV PATH ${PATH}:/home/ubuntu/pycharm-community-2022.2.1/bin
+
+# Install VScode and extensions
+COPY --chown=ubuntu:ubuntu Extern/vscode /home/ubuntu/vscode
 
 # RUN curl -fsSL https://code-server.dev/install.sh | sh -s -- --dry-run
 # RUN wget -c https://github.com/coder/code-server/releases/download/v4.4.0/code-server_4.4.0_amd64.deb \
@@ -319,14 +334,49 @@ RUN apt-get update \
 #     && code --no-sandbox --user-data-dir /root --install-extension ms-iot.vscode-ros-0.8.2.vsix \
 #     && code --no-sandbox --user-data-dir /root --install-extension twxs.cmake-0.0.17.vsix
 
+# RUN cd $HOME/vscode \
+#     && wget -c https://github.com/microsoft/vscode-cpptools/releases/download/v1.10.7/cpptools-linux.vsix \
+#     && code-server  --user-data-dir $HOME/.vscode-server --install-extension cpptools-linux.vsix  \
+#     && code-server  --user-data-dir $HOME/.vscode-server --install-extension ms-iot.vscode-ros-0.8.2.vsix \
+#     && code-server  --user-data-dir $HOME/.vscode-server --install-extension twxs.cmake-0.0.17.vsix \
+#     # && code-server  --user-data-dir $HOME/.vscode-server --install-extension ms-python.python-2022.15.12451011.vsix \
+#     && code-server  --user-data-dir $HOME/.vscode-server --install-extension ms-python.python-2022.8.1.vsix
 
-# --------------------------------------------
+# USER ubuntu
+
+RUN cd /home/ubuntu/vscode \
+    && wget -c https://github.com/microsoft/vscode-cpptools/releases/download/v1.10.7/cpptools-linux.vsix \
+    && code-server  --install-extension cpptools-linux.vsix  \
+    && code-server  --install-extension ms-iot.vscode-ros-0.8.2.vsix \
+    && code-server  --install-extension twxs.cmake-0.0.17.vsix \
+    && code-server  --install-extension ms-python.python-2022.8.1.vsix
+    # && code-server --install-extension ms-python.python-2022.15.12451011.vsix \
+
+# Config VIM, TMUX and Shell
+COPY --chown=ubuntu:ubuntu Extern/dotfiles /home/ubuntu/dotfiles
+
+# Install oh-my-zsh
+# COPY --chown=ubunntu:ubuntu Extern/oh-myzsh-install.sh /tmp/oh-myzsh-install.sh
+# 
+# RUN /tmp/oh-myzsh-install.sh \
+#     && chsh -s $(which zsh)
+
+RUN mkdir -p ~/.vim/autoload \
+    && cd ~  \
+    && ln -s $HOME/dotfiles/.vimrc \
+    && ln -s $HOME/dotfiles/.tmux.conf
+
+COPY --chown=ubuntu:ubuntu Extern/plug.vim $HOME/.vim/autoload/plug.vim
+
+RUN sudo apt update -y \
+    && sudo apt-get install -y bash-completion
+
+ENV SHELL /bin/bash
 
 # setup entrypoint
-COPY Extern/Ubuntu18/entrypoint.sh /root/entrypoint.sh
-RUN chmod 755 /root/entrypoint.sh
-ENTRYPOINT ["/root/entrypoint.sh"]
-
+COPY --chown=ubuntu:ubuntu Extern/Ubuntu18/entrypoint.sh /home/ubuntu/entrypoint.sh
+RUN sudo chmod 755 $HOME/entrypoint.sh
+ENTRYPOINT ["/home/ubuntu/entrypoint.sh"]
 
 # From https://github.com/NVIDIA/nvidia-container-runtime/blob/master/README.md
 # compute: required for CUDA and OpenCL applications.
