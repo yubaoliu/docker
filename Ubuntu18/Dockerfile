@@ -111,6 +111,7 @@ RUN sudo apt-get update && \
     ctags \
     net-tools \
     openssh-server  \
+    xvfb \
     --fix-missing \
     && sudo rm -rf /var/lib/apt/lists/*
 
@@ -315,7 +316,8 @@ ENV PATH ${PATH}:/home/ubuntu/.vscode-server/bin/${VSCODE_COMMIT_ID}/bin
 
 # pycharm 
 RUN wget -c https://download.jetbrains.com.cn/python/pycharm-community-2022.2.1.tar.gz --no-check-certificate \
-    && tar -zxvf pycharm-community-2022.2.1.tar.gz 
+    && tar -zxvf pycharm-community-2022.2.1.tar.gz \
+    && rm -rf pycharm-community-2022.2.1.tar.gz 
 
 ENV PATH ${PATH}:/home/ubuntu/pycharm-community-2022.2.1/bin
 
@@ -369,7 +371,8 @@ RUN mkdir -p ~/.vim/autoload \
 COPY --chown=ubuntu:ubuntu Extern/plug.vim $HOME/.vim/autoload/plug.vim
 
 RUN sudo apt update -y \
-    && sudo apt-get install -y bash-completion
+    && sudo apt-get install -y bash-completion \
+    && apt-utils
 
 ENV SHELL /bin/bash
 
