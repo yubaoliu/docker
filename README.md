@@ -12,17 +12,22 @@ xhost +local:root
 - FROM yubao/ubuntu18:cuda11
 - FROM yubao/ubuntu16:cuda11
 
-# Root
-
-## Image
+# Image
 
 - image: yubaoliu/root:ros-cuda10.2-cudnn7-ubuntu18
 - image: yubaoliu/root:ros-cuda10.2-cudnn7-ubuntu16
 
-## Test root image
+- Test root image
 
 ```sh
 docker-compose -f docker-compose-test-ubuntu18.yml up
+```
+
+# Examples
+- Test nvidia
+
+```sh
+docker run --runtime=nvidia --rm nvidia/cudagl:11.3.0-devel-ubuntu20.04  nvidia-smi
 ```
 
 # Tips
@@ -46,3 +51,6 @@ In this case:
 
 # TODO
 - 为了节省存储空间，分层管理dockerfile
+
+# Refefences
+- [Installing the NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)

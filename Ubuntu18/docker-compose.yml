@@ -10,7 +10,7 @@ services:
             CUDA_VERSION: 11.3.0
             # CUDNN_VERSION: cudnn8
             ROS_DISTRO: melodic
-            VSCODE_COMMIT_ID: da76f93349a72022ca4670c1b84860304616aaa2
+            VSCODE_COMMIT_ID: 8b3775030ed1a69b13e4f4c628c612102e30a681
             # http_proxy: ${HTTP_PROXY}
             # https_proxy: ${HTTPS_PROXY}
             # CUDNN_VERSION: 7

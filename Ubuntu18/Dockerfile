@@ -70,6 +70,7 @@ RUN sudo apt-get purge -y cmake \
     # && wget -c https://github.com/Kitware/CMake/releases/download/v3.18.1/cmake-3.18.1.tar.gz \
     # && tar -xzvf cmake-3.18.1.tar.gz \
     # && cd /tmp/cmake-3.18.1 \
+    && chmod +x ./bootstrap  \
     && ./bootstrap --qt-gui \
     && make \
     && sudo make install \
@@ -208,13 +209,12 @@ RUN sudo apt update \
 
 # Install ROS bootstrap tools
 RUN sudo apt-get update \
-    && sudo apt-get install --no-install-recommends -y \
+    && sudo apt-get install --no-install-recommends -y  -f \
     python-rosdep \
     python-rosinstall \
     python-vcstools \
     python-rosinstall-generator \
     python-wstool \
-    --fix-missing \
     && sudo rm -rf /var/lib/apt/lists/*
 
 USER ubuntu
@@ -241,17 +241,17 @@ RUN sudo apt-get update && \
     --fix-missing \
     && sudo rm -rf /var/lib/apt/lists/*
 
-# Test GUI
-COPY --chown=ubuntu:ubuntu Extern/Pangolin /tmp/Pangolin
-# RUN git clone https://gitee.com/yubaoliu/Pangolin.git  \
-# RUN git clone https://github.com/stevenlovegrove/Pangolin.git \
-RUN cd /tmp/Pangolin \
-    && mkdir build \
-    && cd build \
-    && cmake .. \
-    && cmake --build . \
-    && sudo make install \
-    && rm /tmp/Pangolin -r
+# # Test GUI
+# COPY --chown=ubuntu:ubuntu Extern/Pangolin /tmp/Pangolin
+# # RUN git clone https://gitee.com/yubaoliu/Pangolin.git  \
+# # RUN git clone https://github.com/stevenlovegrove/Pangolin.git \
+# RUN cd /tmp/Pangolin \
+#     && mkdir build \
+#     && cd build \
+#     && cmake .. \
+#     && cmake --build . \
+#     && sudo make install \
+#     && rm /tmp/Pangolin -r
 
 # update pip
 # RUN curl -kL https://bootstrap.pypa.io/pip/2.7/get-pip.py | python  \
@@ -303,26 +303,42 @@ RUN sudo apt-get update -y \
 #     --fix-missing \
 #     && rm -rf /var/lib/apt/lists/*
 
-ARG VSCODE_COMMIT_ID
+#  code
+RUN wget -c https://vscode.download.prss.microsoft.com/dbazure/download/stable/8b3775030ed1a69b13e4f4c628c612102e30a681/code_1.85.2-1705561292_amd64.deb \
+    && sudo dpkg -i code_1.85.2-1705561292_amd64.deb
 
+ARG VSCODE_COMMIT_ID
 RUN rm ~/.vscode-server/bin/* -rf \
     && mkdir -p ~/.vscode-server/bin \
     && cd ~/.vscode-server/bin  \
-    && wget -c https://vscode.cdn.azure.cn/stable/${VSCODE_COMMIT_ID}/vscode-server-linux-x64.tar.gz --no-check-certificate \
+    && wget -c https://update.code.visualstudio.com/commit:${VSCODE_COMMIT_ID}/server-linux-x64/stable \
+    && mv stable vscode-server-linux-x64.tar.gz  \
     && tar -zxf vscode-server-linux-x64.tar.gz \
     && mv vscode-server-linux-x64 ${VSCODE_COMMIT_ID} 
+ 
+    # && wget -c https://vscode.cdn.azure.cn/stable/${VSCODE_COMMIT_ID}/vscode-server-linux-x64.tar.gz --no-check-certificate \
 
 ENV PATH ${PATH}:/home/ubuntu/.vscode-server/bin/${VSCODE_COMMIT_ID}/bin
 
-# pycharm 
-RUN wget -c https://download.jetbrains.com.cn/python/pycharm-community-2022.2.1.tar.gz --no-check-certificate \
-    && tar -zxvf pycharm-community-2022.2.1.tar.gz \
-    && rm -rf pycharm-community-2022.2.1.tar.gz 
-
-ENV PATH ${PATH}:/home/ubuntu/pycharm-community-2022.2.1/bin
-
 # Install VScode and extensions
 COPY --chown=ubuntu:ubuntu Extern/vscode /home/ubuntu/vscode
+
+USER ubuntu
+RUN cd /home/ubuntu/vscode \
+    && wget -c https://github.com/microsoft/vscode-cpptools/releases/download/v1.10.7/cpptools-linux.vsix \
+    && code-server  --install-extension cpptools-linux.vsix  \
+    && code-server  --install-extension ms-iot.vscode-ros-0.8.2.vsix \
+    && code-server  --install-extension twxs.cmake-0.0.17.vsix \
+    && code-server  --install-extension ms-python.python-2022.8.1.vsix
+    # && code-server --install-extension ms-python.python-2022.15.12451011.vsix \
+
+
+# pycharm 
+# RUN wget -c https://download.jetbrains.com.cn/python/pycharm-community-2022.2.1.tar.gz --no-check-certificate \
+#     && tar -zxvf pycharm-community-2022.2.1.tar.gz \
+#     && rm -rf pycharm-community-2022.2.1.tar.gz 
+# ENV PATH ${PATH}:/home/ubuntu/pycharm-community-2022.2.1/bin
+
 
 # RUN curl -fsSL https://code-server.dev/install.sh | sh -s -- --dry-run
 # RUN wget -c https://github.com/coder/code-server/releases/download/v4.4.0/code-server_4.4.0_amd64.deb \
@@ -344,16 +360,6 @@ COPY --chown=ubuntu:ubuntu Extern/vscode /home/ubuntu/vscode
 #     # && code-server  --user-data-dir $HOME/.vscode-server --install-extension ms-python.python-2022.15.12451011.vsix \
 #     && code-server  --user-data-dir $HOME/.vscode-server --install-extension ms-python.python-2022.8.1.vsix
 
-# USER ubuntu
-
-RUN cd /home/ubuntu/vscode \
-    && wget -c https://github.com/microsoft/vscode-cpptools/releases/download/v1.10.7/cpptools-linux.vsix \
-    && code-server  --install-extension cpptools-linux.vsix  \
-    && code-server  --install-extension ms-iot.vscode-ros-0.8.2.vsix \
-    && code-server  --install-extension twxs.cmake-0.0.17.vsix \
-    && code-server  --install-extension ms-python.python-2022.8.1.vsix
-    # && code-server --install-extension ms-python.python-2022.15.12451011.vsix \
-
 # Config VIM, TMUX and Shell
 COPY --chown=ubuntu:ubuntu Extern/dotfiles /home/ubuntu/dotfiles
 
@@ -371,8 +377,7 @@ RUN mkdir -p ~/.vim/autoload \
 COPY --chown=ubuntu:ubuntu Extern/plug.vim $HOME/.vim/autoload/plug.vim
 
 RUN sudo apt update -y \
-    && sudo apt-get install -y bash-completion \
-    && apt-utils
+    && sudo apt-get install -y bash-completion  apt-utils
 
 ENV SHELL /bin/bash
 

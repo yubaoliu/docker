@@ -21,7 +21,7 @@ RUN echo 'Etc/UTC' > /etc/timezone \
     && rm /etc/localtime -f \
     && ln -s /usr/share/zoneinfo/Etc/GMT+8 /etc/localtime  \
     && apt-get update  \
-    && apt-get install -q -y --no-install-recommends tzdata \
+    && apt-get install -q -y --no-install-recommends tzdata  -f\
     && rm -rf /var/lib/apt/lists/*
 
 # setup environment
@@ -161,18 +161,18 @@ RUN mkdir -p /root/catkin_ws/src \
 # RUN curl -kL https://bootstrap.pypa.io/pip/2.7/get-pip.py | python2  \
 #     && curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
 
-#Pangolin
-COPY Extern/Pangolin /tmp/Pangolin
-# RUN git clone https://github.com/stevenlovegrove/Pangolin.git \
-# RUN git clone  https://gitee.com/yubaoliu/Pangolin.git \
-RUN cd /tmp/Pangolin \
-    # && git checkout v0.6 \
-    && mkdir build \
-    && cd build \
-    && cmake .. -DCMAKE_BUILD_TYPE=Release \
-    && make -j 3 \
-    && make install \
-    && rm -rf /tmp/Pangolin
+# #Pangolin
+# COPY Extern/Pangolin /tmp/Pangolin
+# # RUN git clone https://github.com/stevenlovegrove/Pangolin.git \
+# # RUN git clone  https://gitee.com/yubaoliu/Pangolin.git \
+# RUN cd /tmp/Pangolin \
+#     # && git checkout v0.6 \
+#     && mkdir build \
+#     && cd build \
+#     && cmake .. -DCMAKE_BUILD_TYPE=Release \
+#     && make -j 3 \
+#     && make install \
+#     && rm -rf /tmp/Pangolin
 
 # Install tools for development
 RUN apt-get update && \
@@ -213,8 +213,8 @@ RUN apt-get update && \
 #     && make -j 3 \
 #     && make install
  
-RUN rm /etc/apt/sources.list.d/cuda.list \
-    && rm /etc/apt/sources.list.d/nvidia-ml.list
+# RUN rm /etc/apt/sources.list.d/cuda.list \
+#     && rm /etc/apt/sources.list.d/nvidia-ml.list
 
 # Config VIM, TMUX and Shell
 COPY Extern/dotfiles /root/dotfiles
@@ -233,7 +233,8 @@ RUN apt update  \
 # Install oh-my-zsh
 COPY Extern/oh-myzsh-install.sh /tmp/oh-myzsh-install.sh
 
-RUN /tmp/oh-myzsh-install.sh \
+RUN chmod +x /tmp/oh-myzsh-install.sh  \
+    &&  /tmp/oh-myzsh-install.sh \
     && chsh -s $(which zsh)
 
 RUN pip3 install autopep8  yapf \
@@ -257,13 +258,22 @@ RUN sed -i '/^#/!s/PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config
     && sudo service ssh restart \
     && echo "root:abcd1234"|chpasswd
 
- # Install VScode
-RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key  add - \
-	&& add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" \
-	&& apt update && apt install -y code \
-    --fix-missing \
-    && rm -rf /var/lib/apt/lists/*
+# Install VScode
+# RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key  add - \
+# 	&& add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" \
+# 	&& apt update && apt install -y code \
+#     --fix-missing \
+#     && rm -rf /var/lib/apt/lists/*
 
+RUN sudo apt-get install -y wget gpg
+RUN wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg \
+    && sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg \
+    && echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" |sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null \
+    && rm -f packages.microsoft.gpg \
+    && sudo apt install -y apt-transport-https \
+    && sudo apt update \
+    && sudo apt install -y  code \
+    && rm -rf /var/lib/apt/lists/*
 
 # setup entrypoint
 COPY Extern/Ubuntu20/entrypoint.sh /root/entrypoint.sh
