@@ -16,6 +16,22 @@ ENV DEBIAN_FRONTEND noninteractive
 
 WORKDIR /root
 
+# setup environment
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+
+# RUN apt-key del A4B469963BF863CC
+RUN rm /etc/apt/sources.list.d/cuda.list \
+    && rm /etc/apt/sources.list.d/nvidia-ml.list
+
+COPY Extern/Ubuntu16/sources.list /etc/apt/sources.list
+
+RUN mkdir -p ~/.pip && touch ~/.pip/pip.conf
+COPY Extern/Ubuntu16/pip.conf ~/.pip/pip.conf
+
+RUN apt update \
+    && apt install -f -y
+
 # setup timezone
 RUN echo 'Etc/UTC' > /etc/timezone \
     && rm /etc/localtime -f \
@@ -23,16 +39,6 @@ RUN echo 'Etc/UTC' > /etc/timezone \
     && apt-get update  \
     && apt-get install -q -y --no-install-recommends tzdata \
     && rm -rf /var/lib/apt/lists/*
-
-# setup environment
-ENV LANG C.UTF-8
-ENV LC_ALL C.UTF-8
-
-COPY Extern/Ubuntu16/sources.list /etc/apt/sources.list
-
-RUN mkdir -p ~/.pip && touch ~/.pip/pip.conf
-
-COPY Extern/Ubuntu16/pip.conf ~/.pip/pip.conf
 
 RUN apt-get update && \
     apt-get install -y software-properties-common \
@@ -46,17 +52,23 @@ RUN apt-get update && \
     qt5-default \
     --fix-missing \
     && rm -rf /var/lib/apt/lists/*
- 
-# Install cmake
-COPY Extern/CMake /tmp/CMake
 
-RUN apt-get purge -y cmake \
-    && cd /tmp/CMake \
+ # Install cmake
+# COPY Extern/CMake /tmp/CMake
+
+RUN apt-get purge -y cmake
+
+RUN git clone --recursive https://github.com/Kitware/CMake.git \
+    && cd CMake \
+    && git checkout v3.18.1 \
+    && ./bootstrap --qt-gui \
+    && make \
+    && make install \
+    && rm ./Cmake -rf 
+
     # && wget -c https://github.com/Kitware/CMake/releases/download/v3.18.1/cmake-3.18.1.tar.gz \
     # && tar -xzvf cmake-3.18.1.tar.gz \
     # && git checkout v3.18.1 \
-    && ./bootstrap --qt-gui && make && make install \
-    && rm /tmp/Cmake -rf 
 
 # Install tools for development
 RUN apt-get update && \
@@ -91,9 +103,6 @@ RUN apt-get update && \
     zlib1g-dev \
     x11proto-gl-dev  \
     libcanberra-gtk-module \
-    # cmake-curses-gui \
-    # cmake-qt-gui \
-    # cmake-doc \
     --fix-missing \
     && rm -rf /var/lib/apt/lists/*
 
@@ -188,11 +197,13 @@ ARG ROS_DISTRO
 ENV ROS_DISTRO ${ROS_DISTRO}
 
 RUN /bin/bash -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
-    && /bin/bash -c 'echo "deb http://mirrors.ustc.edu.cn/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
-    && /bin/bash -c 'echo "deb http://mirrors.tuna.tsinghua.edu.cn/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
-    && /bin/bash -c 'echo "deb http://mirrors.sjtug.sjtu.edu.cn/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
-    && apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654  
+   && apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654  \
+   && sudo apt update
 
+# && /bin/bash -c 'echo "deb http://mirrors.ustc.edu.cn/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
+#     && /bin/bash -c 'echo "deb http://mirrors.tuna.tsinghua.edu.cn/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
+#     && /bin/bash -c 'echo "deb http://mirrors.sjtug.sjtu.edu.cn/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
+ 
 COPY --from=ros-kinetic /opt/ros /opt/ros
 COPY --from=ros-kinetic /etc/ros /etc/ros
 
@@ -225,6 +236,9 @@ COPY Extern/proxychains.conf /etc/proxychains.conf
 # RUN proxychains4 rosdep init
 # RUN proxychains4 rosdep update
 
+# RUN rosdep init
+RUN rosdep update
+
 RUN mkdir -p /root/catkin_ws/src \
     && bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash \
             && cd /root/catkin_ws \
@@ -237,24 +251,23 @@ RUN mkdir -p /root/catkin_ws/src \
 
 # # Test GUI
 # Install Pangolin
-COPY Extern/Pangolin /tmp/Pangolin
+# COPY Extern/Pangolin /tmp/Pangolin
+
 # RUN git clone https://gitee.com/yubaoliu/Pangolin.git  \
 # RUN git clone https://github.com/stevenlovegrove/Pangolin.git \
-RUN cd /tmp/Pangolin \
+RUN git clone --recursive https://github.com/stevenlovegrove/Pangolin.git \
+    && cd Pangolin \
+	&& git checkout v0.6 \
     && mkdir build \
     && cd build \
     && cmake .. \
-    && cmake --build . \
+    && make -j5 \
     && make install \
-    && rm /tmp/Pangolin -r
+    && cd ../../ && rm ./Pangolin -r
 
 # update pip
 # RUN curl -kL https://bootstrap.pypa.io/pip/2.7/get-pip.py | python  \
 #     && curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
-
-# RUN apt-key del A4B469963BF863CC
-RUN rm /etc/apt/sources.list.d/cuda.list \
-    && rm /etc/apt/sources.list.d/nvidia-ml.list
 
 # Config VIM, TMUX and Shell
 COPY Extern/dotfiles /root/dotfiles
@@ -270,13 +283,20 @@ RUN apt update  \
     clang-format \
     python3-pip \
     python-autopep8 \
+    gedit \
     --fix-missing \
     && rm -rf /var/lib/apt/lists/*
+
+# install pip2
+RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py \
+    && python2 get-pip.py \
+    && pip --version
 
 # Install oh-my-zsh
 COPY Extern/oh-myzsh-install.sh /tmp/oh-myzsh-install.sh
 
-RUN /tmp/oh-myzsh-install.sh \
+RUN chmod +x /tmp/oh-myzsh-install.sh \
+    && /tmp/oh-myzsh-install.sh \
     && chsh -s $(which zsh)
 
 RUN pip3 install autopep8  yapf \
@@ -308,12 +328,10 @@ RUN sed -i '/^#/!s/PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config
     && echo "root:abcd1234"|chpasswd
 
 # Install VScode
-COPY Extern/vscode /root/vscode
-RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key  add - \
-	&& add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" \
-	&& apt update && apt install -y code \
-    --fix-missing \
-    && rm -rf /var/lib/apt/lists/*
+# RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key  add - \
+# 	&& add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" \
+# 	&& apt update && apt install -y code  -f \
+#     && rm -rf /var/lib/apt/lists/*
 
 # RUN cd /root/vscode \
 #     && wget -c https://github.com/microsoft/vscode-cpptools/releases/download/v1.10.7/cpptools-linux.vsix \

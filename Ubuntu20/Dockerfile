@@ -237,8 +237,7 @@ RUN chmod +x /tmp/oh-myzsh-install.sh  \
     &&  /tmp/oh-myzsh-install.sh \
     && chsh -s $(which zsh)
 
-RUN pip3 install autopep8  yapf \
-    && mkdir -p ~/.vim/autoload \
+RUN mkdir -p ~/.vim/autoload \
     && cd ~  \
     && ln -s /root/dotfiles/.vimrc \
     && ln -s /root/dotfiles/.tmux.conf
