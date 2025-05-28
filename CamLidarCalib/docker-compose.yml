@@ -1,0 +1,33 @@
+version: '2.3'
+services:
+  calib:
+    image: yubao/calib
+    # container_name: root_ros_noetic
+    build:
+        context: ..
+        dockerfile: CamLidarCalib/Dockerfile
+    runtime: nvidia
+    stdin_open: true
+    tty: true
+    privileged: true
+    command:
+        # - xterm
+        - lxterminal
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+    devices:
+      - /dev:/dev
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        - ~/.Xauthority:/home/ubuntu/.Xauthority
+        - ~/Tempt/.vim:/home/ubuntu/.vim
+        - ~/.vscode:/home/ubuntu/.vscode
+        - CamLidarCalib:/home/ubuntu
+        - /home/yubao/Share/docker:/home/ubuntu/share
+        # - ~/.ssh:/home/ubuntu/.ssh
+        # - /usr/lib/nvidia-cuda-toolkit:/usr/lib/nvidia-cuda-toolkit
+        # - yubao_ubuntu20_cuda11:/root
+
+volumes:
+  CamLidarCalib:

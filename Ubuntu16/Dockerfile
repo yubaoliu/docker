@@ -222,8 +222,8 @@ RUN apt-get update && \
 COPY Extern/proxychains.conf /etc/proxychains.conf
 
 # config ROS environment
-# RUN proxychains4 rosdep init
-# RUN proxychains4 rosdep update
+# RUN rosdep init
+RUN rosdep update
 
 RUN mkdir -p /root/catkin_ws/src \
     && bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash \
@@ -276,7 +276,8 @@ RUN apt update  \
 # Install oh-my-zsh
 COPY Extern/oh-myzsh-install.sh /tmp/oh-myzsh-install.sh
 
-RUN /tmp/oh-myzsh-install.sh \
+RUN chmod +x /tmp/oh-myzsh-install.sh \
+    && /tmp/oh-myzsh-install.sh \
     && chsh -s $(which zsh)
 
 RUN pip3 install autopep8  yapf \
@@ -308,12 +309,12 @@ RUN sed -i '/^#/!s/PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config
     && echo "root:abcd1234"|chpasswd
 
 # Install VScode
-COPY Extern/vscode /root/vscode
-RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key  add - \
-	&& add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" \
-	&& apt update && apt install -y code \
-    --fix-missing \
-    && rm -rf /var/lib/apt/lists/*
+# COPY Extern/vscode /root/vscode
+# RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key  add - \
+# 	&& add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" \
+# 	&& apt update && apt install -y code \
+#     --fix-missing \
+#     && rm -rf /var/lib/apt/lists/*
 
 # RUN cd /root/vscode \
 #     && wget -c https://github.com/microsoft/vscode-cpptools/releases/download/v1.10.7/cpptools-linux.vsix \
@@ -321,8 +322,10 @@ RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key
 #     && code --install-extension ms-iot.vscode-ros-0.8.2.vsix \
 #     && code --no-sandbox --user-data-dir /root --install-extension twxs.cmake-0.0.17.vsix
 
+COPY Ubuntu16/.Xdefaults /root/.Xdefaults
+
 # setup entrypoint
-COPY Extern/Ubuntu16/entrypoint.sh /root/entrypoint.sh
+COPY Ubuntu16/entrypoint.sh /root/entrypoint.sh
 RUN chmod 755 /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
 

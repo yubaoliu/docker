@@ -1,11 +1,11 @@
 version: '2.3'
 services:
-  calib:
-    image: yubao/calib
+  NormalUsage:
+    image: yubao/normal_usage
     # container_name: root_ros_noetic
     build:
         context: ..
-        dockerfile: CamLaserCalibration/Dockerfile
+        dockerfile: NormalUsage/Dockerfile
     runtime: nvidia
     stdin_open: true
     tty: true
@@ -23,8 +23,9 @@ services:
         - ~/.Xauthority:/home/ubuntu/.Xauthority
         - ~/Tempt/.vim:/home/ubuntu/.vim
         - ~/.vscode:/home/ubuntu/.vscode
+        - normal_usage:/home/ubuntu
         # - /usr/lib/nvidia-cuda-toolkit:/usr/lib/nvidia-cuda-toolkit
         # - yubao_ubuntu20_cuda11:/root
 
-# volumes:
-#     yubao_ubuntu20_cuda11:
+volumes:
+  normal_usage:

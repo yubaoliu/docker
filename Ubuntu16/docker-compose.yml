@@ -26,6 +26,7 @@ services:
     volumes:
         - /tmp/.X11-unix:/tmp/.X11-unix:rw
         - ~/.Xauthority:/root/.Xauthority
+        - ~/.Xdefaults:/root/.Xdefaults
         - ~/dotfile:/root/dotfile
         # - /usr/lib/nvidia-cuda-toolkit:/usr/lib/nvidia-cuda-toolkit
         # - yubao_ubuntu16_cuda11:/root
