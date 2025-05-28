@@ -1,7 +1,5 @@
 build-ubuntu16-cuda11:
-	cd Extern/CMake && git checkout v3.18.1 && cd ../.. \
-	&& cd Extern/Pangolin && git checkout v0.6 && cd ../.. \
-	&& docker-compose -f ./Ubuntu16/docker-compose.yml build
+	docker-compose -f ./Ubuntu16/docker-compose.yml build
 run-ubuntu16-cuda11:
 	docker-compose -f ./Ubuntu16/docker-compose.yml down --remove-orphans \
 	&& docker-compose -f ./Ubuntu16/docker-compose.yml up 
@@ -39,12 +37,6 @@ run-normal-usage:
 # run-rplidar:
 # 	docker-compose -f ./rplidar/docker-compose.yml down \
 # 	&& docker-compose -f ./rplidar/docker-compose.yml up --remove-orphans
-
-build-slamtech:
-	docker-compose -f ./SlamTech/docker-compose.yml build
-run-slamtech:
-	docker-compose -f ./SlamTech/docker-compose.yml down  --remove-orphans \
-	&& docker-compose -f ./SlamTech/docker-compose.yml up
 
 build-voxel-slam:
 	docker-compose -f ./voxel-slam/docker-compose.yml build

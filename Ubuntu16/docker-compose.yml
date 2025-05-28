@@ -1,8 +1,8 @@
 version: '2.3'
 services:
   ubuntu16-cuda11.3.0:
-    image: yubao/ubuntu16:cuda11.3.0
-    # container_name: root_ros_noetic
+    image: slamai/ubuntu16:cuda11.3.0
+    container_name: ubuntu16
     build:
         context: ..
         dockerfile: Ubuntu16/Dockerfile

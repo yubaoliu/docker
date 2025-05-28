@@ -192,11 +192,13 @@ ENV ROS_DISTRO ${ROS_DISTRO}
 
 USER root
 RUN /bin/bash -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
-    && /bin/bash -c 'echo "deb http://mirrors.ustc.edu.cn/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
-    && /bin/bash -c 'echo "deb http://mirrors.tuna.tsinghua.edu.cn/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
-    && /bin/bash -c 'echo "deb http://mirrors.sjtug.sjtu.edu.cn/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
-    && apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+   && apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 \
+    && sudo apt update
 
+    # && /bin/bash -c 'echo "deb http://mirrors.ustc.edu.cn/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
+    # && /bin/bash -c 'echo "deb http://mirrors.tuna.tsinghua.edu.cn/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
+    # && /bin/bash -c 'echo "deb http://mirrors.sjtug.sjtu.edu.cn/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list' \
+ 
 COPY --from=ros-melodic /opt/ros /opt/ros
 COPY --from=ros-melodic /etc/ros /etc/ros
 
@@ -231,7 +233,7 @@ RUN mkdir -p $HOME/catkin_ws/src \
 # # COPY ./rosdep/20-default.list /etc/ros/rosdep/sources.list.d/20-default.list
 # # COPY ./rosdep/*  /etc/ros/rosdep/
 # RUN proxychains4 rosdep init
-# RUN proxychains4 rosdep update
+RUN rosdep update
 
 # Editors
 RUN sudo apt-get update && \
@@ -304,32 +306,32 @@ RUN sudo apt-get update -y \
 #     && rm -rf /var/lib/apt/lists/*
 
 #  code
-RUN wget -c https://vscode.download.prss.microsoft.com/dbazure/download/stable/8b3775030ed1a69b13e4f4c628c612102e30a681/code_1.85.2-1705561292_amd64.deb \
-    && sudo dpkg -i code_1.85.2-1705561292_amd64.deb
+# RUN wget -c https://vscode.download.prss.microsoft.com/dbazure/download/stable/8b3775030ed1a69b13e4f4c628c612102e30a681/code_1.85.2-1705561292_amd64.deb \
+#     && sudo dpkg -i code_1.85.2-1705561292_amd64.deb
 
-ARG VSCODE_COMMIT_ID
-RUN rm ~/.vscode-server/bin/* -rf \
-    && mkdir -p ~/.vscode-server/bin \
-    && cd ~/.vscode-server/bin  \
-    && wget -c https://update.code.visualstudio.com/commit:${VSCODE_COMMIT_ID}/server-linux-x64/stable \
-    && mv stable vscode-server-linux-x64.tar.gz  \
-    && tar -zxf vscode-server-linux-x64.tar.gz \
-    && mv vscode-server-linux-x64 ${VSCODE_COMMIT_ID} 
+# ARG VSCODE_COMMIT_ID
+# RUN rm ~/.vscode-server/bin/* -rf \
+#     && mkdir -p ~/.vscode-server/bin \
+#     && cd ~/.vscode-server/bin  \
+#     && wget -c https://update.code.visualstudio.com/commit:${VSCODE_COMMIT_ID}/server-linux-x64/stable \
+#     && mv stable vscode-server-linux-x64.tar.gz  \
+#     && tar -zxf vscode-server-linux-x64.tar.gz \
+#     && mv vscode-server-linux-x64 ${VSCODE_COMMIT_ID} 
  
     # && wget -c https://vscode.cdn.azure.cn/stable/${VSCODE_COMMIT_ID}/vscode-server-linux-x64.tar.gz --no-check-certificate \
 
-ENV PATH ${PATH}:/home/ubuntu/.vscode-server/bin/${VSCODE_COMMIT_ID}/bin
+# ENV PATH ${PATH}:/home/ubuntu/.vscode-server/bin/${VSCODE_COMMIT_ID}/bin
 
 # Install VScode and extensions
-COPY --chown=ubuntu:ubuntu Extern/vscode /home/ubuntu/vscode
+# COPY --chown=ubuntu:ubuntu Extern/vscode /home/ubuntu/vscode
 
 USER ubuntu
-RUN cd /home/ubuntu/vscode \
-    && wget -c https://github.com/microsoft/vscode-cpptools/releases/download/v1.10.7/cpptools-linux.vsix \
-    && code-server  --install-extension cpptools-linux.vsix  \
-    && code-server  --install-extension ms-iot.vscode-ros-0.8.2.vsix \
-    && code-server  --install-extension twxs.cmake-0.0.17.vsix \
-    && code-server  --install-extension ms-python.python-2022.8.1.vsix
+# RUN cd /home/ubuntu/vscode \
+#     && wget -c https://github.com/microsoft/vscode-cpptools/releases/download/v1.10.7/cpptools-linux.vsix \
+#     && code-server  --install-extension cpptools-linux.vsix  \
+#     && code-server  --install-extension ms-iot.vscode-ros-0.8.2.vsix \
+#     && code-server  --install-extension twxs.cmake-0.0.17.vsix \
+#     && code-server  --install-extension ms-python.python-2022.8.1.vsix
     # && code-server --install-extension ms-python.python-2022.15.12451011.vsix \
 
 
