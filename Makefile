@@ -4,19 +4,19 @@ run-ubuntu16-cuda11:
 	docker-compose -f ./Ubuntu16/docker-compose.yml down --remove-orphans \
 	&& docker-compose -f ./Ubuntu16/docker-compose.yml up 
 
-build-ubuntu18-cuda11:
+build-ubuntu18-cuda12:
 	cd Extern/CMake && git checkout v3.18.1  && cd ../.. \
 	&& cd Extern/Pangolin && git checkout master && cd ../.. \
 	&& docker-compose -f ./Ubuntu18/docker-compose.yml build
-run-ubuntu18-cuda11:
-	docker-compose -f ./Ubuntu18/docker-compose.yml down \
+run-ubuntu18-cuda12:
+	docker-compose -f ./Ubuntu18/docker-compose.yml down &&  \
 	docker-compose -f ./Ubuntu18/docker-compose.yml up --remove-orphans
 
-build-ubuntu20-cuda11:
+build-ubuntu20-cuda12:
 	cd Extern/CMake && git checkout v3.18.1  && cd ../.. \
 	&& cd Extern/Pangolin && git checkout master && cd ../.. \
 	&& docker-compose -f ./Ubuntu20/docker-compose.yml build
-run-ubuntu20-cuda11:
+run-ubuntu20-cuda12:
 	docker-compose  -f ./Ubuntu20/docker-compose.yml down \
 	&& docker-compose -f ./Ubuntu20/docker-compose.yml up --remove-orphans
 

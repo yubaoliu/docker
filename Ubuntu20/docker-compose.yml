@@ -1,17 +1,16 @@
 version: '2.3'
 services:
-  ubuntu20-cuda11.3.0:
-    image: yubao/ubuntu20:cuda11.3.0
-    # container_name: root_ros_noetic
+  ubuntu20-cuda12.9.0:
+    image: slamai/ubuntu20:cuda12.2.2
+    container_name: ubuntu20
     build:
         context: ..
         dockerfile: Ubuntu20/Dockerfile
         args:
-            CUDA_VERSION: 11.3.0
+            CUDA_VERSION: 12.2.2
             ROS_DISTRO: noetic
             CUDNN_VERSION: cudnn8
-            # cudnn_version: 7
-            # ubuntu_version: 16.04
+    # user: "1000:1000"
     runtime: nvidia
     stdin_open: true
     tty: true

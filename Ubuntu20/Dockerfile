@@ -8,8 +8,8 @@ ARG CUDA_VERSION
 ARG CUDNN_VERSION
 
 FROM ros:noetic-perception as ros-noetic
-FROM nvidia/cudagl:${CUDA_VERSION}-devel-ubuntu20.04
-# FROM nvidia/cuda:${CUDA_VERSION}-${CUDNN_VERSION}-devel-ubuntu20.04
+# FROM nvidia/cudagl:${CUDA_VERSION}-devel-ubuntu20.04
+FROM nvidia/cuda:${CUDA_VERSION}-${CUDNN_VERSION}-devel-ubuntu20.04
 MAINTAINER yubao.liu.ra@tut.jp 
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -250,9 +250,11 @@ RUN apt update \
     && apt install -y net-tools \
     openssh-server  \
     libceres-dev \
+    x11-apps \
     --fix-missing \
     && rm -rf /var/lib/apt/lists/*
 
+# SSH config
 RUN sed -i '/^#/!s/PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config \
     && sudo service ssh restart \
     && echo "root:abcd1234"|chpasswd
@@ -264,15 +266,16 @@ RUN sed -i '/^#/!s/PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config
 #     --fix-missing \
 #     && rm -rf /var/lib/apt/lists/*
 
-RUN sudo apt-get install -y wget gpg
-RUN wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg \
-    && sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg \
-    && echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" |sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null \
-    && rm -f packages.microsoft.gpg \
-    && sudo apt install -y apt-transport-https \
-    && sudo apt update \
-    && sudo apt install -y  code \
-    && rm -rf /var/lib/apt/lists/*
+# for vscode
+RUN sudo apt  update \
+    && sudo apt install -y snap  flatpak
+    # && sudo snap install -y code --classic
+
+COPY Ubuntu20/local_config.zsh /root/local_config.zsh
+
+# conda
+RUN wget -c "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" \
+    && bash Miniforge3-$(uname)-$(uname -m).sh -b -p "${HOME}/conda"
 
 # setup entrypoint
 COPY Extern/Ubuntu20/entrypoint.sh /root/entrypoint.sh

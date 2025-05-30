@@ -1,4 +1,8 @@
 
+# Requirements
+- docker
+- docker-compose
+- NVIDIA Container Toolkit
 
 # Enable display
 
@@ -6,29 +10,12 @@
 xhost +local:root
 ```
 
-# Release 
-
-- FROM yubao/ubuntu20:cuda11
-- FROM yubao/ubuntu18:cuda11
-- FROM yubao/ubuntu16:cuda11
-
-# Image
-
-- image: yubaoliu/root:ros-cuda10.2-cudnn7-ubuntu18
-- image: yubaoliu/root:ros-cuda10.2-cudnn7-ubuntu16
-
-- Test root image
-
-```sh
-docker-compose -f docker-compose-test-ubuntu18.yml up
-```
-
 # Examples
 - Test nvidia
 
-```sh
-docker run --runtime=nvidia --rm nvidia/cudagl:11.3.0-devel-ubuntu20.04  nvidia-smi
-```
+    ```sh
+    docker run --runtime=nvidia --rm nvidia/cudagl:11.3.0-devel-ubuntu20.04  nvidia-smi
+    ```
 
 # Tips
 
@@ -40,7 +27,7 @@ For exame, I use ``git clone`` within my image. However, it did not appear in my
 
 In this case:
 - Remove all containers
-- Remove all volums 
+- Remove all volums
 - Remove all docker-compose services
 
 
@@ -49,8 +36,11 @@ In this case:
 - Cannot use ssh to git clone repo in dockerfile
 
 
+# Refefences
+- [Installing the NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+- [CUDA GPU Compute Capability](https://developer.nvidia.com/cuda-gpus)
+
 # TODO
 - 为了节省存储空间，分层管理dockerfile
 
-# Refefences
-- [Installing the NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+
