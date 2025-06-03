@@ -24,10 +24,10 @@ ENV LC_ALL C.UTF-8
 RUN rm /etc/apt/sources.list.d/cuda.list \
     && rm /etc/apt/sources.list.d/nvidia-ml.list
 
-COPY Extern/Ubuntu16/sources.list /etc/apt/sources.list
+COPY Ubuntu16/sources.list /etc/apt/sources.list
 
 RUN mkdir -p ~/.pip && touch ~/.pip/pip.conf
-COPY Extern/Ubuntu16/pip.conf ~/.pip/pip.conf
+COPY Ubuntu16/pip.conf ~/.pip/pip.conf
 
 RUN apt update \
     && apt install -f -y
@@ -230,7 +230,7 @@ RUN apt-get update && \
     --fix-missing \
     && rm -rf /var/lib/apt/lists/*
 
-COPY Extern/proxychains.conf /etc/proxychains.conf
+COPY Common/proxychains.conf /etc/proxychains.conf
 
 # config ROS environment
 # RUN rosdep init
@@ -293,7 +293,7 @@ RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py \
     && pip --version
 
 # Install oh-my-zsh
-COPY Extern/oh-myzsh-install.sh /tmp/oh-myzsh-install.sh
+COPY Common/oh-myzsh-install.sh /tmp/oh-myzsh-install.sh
 
 RUN chmod +x /tmp/oh-myzsh-install.sh \
     && /tmp/oh-myzsh-install.sh \
@@ -305,7 +305,7 @@ RUN pip3 install autopep8  yapf \
     && ln -s /root/dotfiles/.vimrc \
     && ln -s /root/dotfiles/.tmux.conf
 
-COPY Extern/plug.vim /root/.vim/autoload/plug.vim
+COPY Common/plug.vim /root/.vim/autoload/plug.vim
 
 # "Install ruby"
 RUN sudo apt-add-repository -y ppa:brightbox/ruby-ng  \
@@ -341,7 +341,7 @@ RUN sed -i '/^#/!s/PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config
 #     && code --install-extension ms-iot.vscode-ros-0.8.2.vsix \
 #     && code --no-sandbox --user-data-dir /root --install-extension twxs.cmake-0.0.17.vsix
 
-COPY Ubuntu16/.Xdefaults /root/.Xdefaults
+COPY Common/.Xdefaults /root/.Xdefaults
 
 # setup entrypoint
 COPY Ubuntu16/entrypoint.sh /root/entrypoint.sh

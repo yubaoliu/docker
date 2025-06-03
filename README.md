@@ -4,6 +4,11 @@
 - docker-compose
 - NVIDIA Container Toolkit
 
+# Usage
+- Get dependences
+```sh
+./get_dependences.sh
+```
 # Enable display
 
 ```sh

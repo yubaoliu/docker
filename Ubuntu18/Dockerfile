@@ -32,7 +32,7 @@ ENV LC_ALL C.UTF-8
 
 # COPY Extern/Ubuntu18/hosts /etc/hosts
 
-COPY Extern/Ubuntu18/sources.list /etc/apt/sources.list
+COPY Ubuntu18/sources.list /etc/apt/sources.list
 
 # Install tools for development
 RUN apt-get update && \
@@ -62,7 +62,7 @@ RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers \
 RUN mkdir -p ~/.pip && touch ~/.pip/pip.conf
 
 # COPY --chown=ubuntu:ubuntu Extern/Ubuntu18/pip.conf ~/.pip/pip.conf
-COPY Extern/Ubuntu18/pip.conf ~/.pip/pip.conf
+COPY Ubuntu18/pip.conf ~/.pip/pip.conf
 
 # Install cmake
 # COPY --chown=ubuntu:ubuntu Extern/CMake /tmp/CMake
@@ -382,7 +382,7 @@ RUN mkdir -p ~/.vim/autoload \
     && ln -s $HOME/dotfiles/.tmux.conf
 
 # COPY --chown=ubuntu:ubuntu Extern/plug.vim $HOME/.vim/autoload/plug.vim
-COPY  Extern/plug.vim $HOME/.vim/autoload/plug.vim
+COPY  Common/plug.vim $HOME/.vim/autoload/plug.vim
 
 RUN sudo apt update -y \
     && sudo apt-get install -y bash-completion  apt-utils x11-apps
@@ -391,7 +391,9 @@ ENV SHELL /bin/bash
 
 # setup entrypoint
 # COPY --chown=ubuntu:ubuntu Extern/Ubuntu18/entrypoint.sh /home/ubuntu/entrypoint.sh
-COPY Extern/Ubuntu18/entrypoint.sh /root/entrypoint.sh
+COPY Ubuntu18/entrypoint.sh /root/entrypoint.sh
+
+COPY Common/.Xdefaults /root/.Xdefaults
 
 RUN sudo chmod 755 $HOME/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]

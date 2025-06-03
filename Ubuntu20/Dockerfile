@@ -28,11 +28,11 @@ RUN echo 'Etc/UTC' > /etc/timezone \
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
-COPY Extern/Ubuntu20/sources.list /etc/apt/sources.list
+COPY Ubuntu20/sources.list /etc/apt/sources.list
 
 RUN mkdir -p ~/.pip && touch ~/.pip/pip.conf
 
-COPY Extern/Ubuntu18/pip.conf ~/.pip/pip.conf
+COPY Ubuntu18/pip.conf ~/.pip/pip.conf
 
 # Install tools for development
 RUN apt-get update && \
@@ -231,7 +231,7 @@ RUN apt update  \
     --fix-missing
 
 # Install oh-my-zsh
-COPY Extern/oh-myzsh-install.sh /tmp/oh-myzsh-install.sh
+COPY Common/oh-myzsh-install.sh /tmp/oh-myzsh-install.sh
 
 RUN chmod +x /tmp/oh-myzsh-install.sh  \
     &&  /tmp/oh-myzsh-install.sh \
@@ -242,7 +242,7 @@ RUN mkdir -p ~/.vim/autoload \
     && ln -s /root/dotfiles/.vimrc \
     && ln -s /root/dotfiles/.tmux.conf
 
-COPY Extern/plug.vim /root/.vim/autoload/plug.vim
+COPY Common/plug.vim /root/.vim/autoload/plug.vim
 # --------------------------------------------
 
 # ssh
@@ -273,12 +273,15 @@ RUN sudo apt  update \
 
 COPY Ubuntu20/local_config.zsh /root/local_config.zsh
 
+COPY Common/.Xdefaults /root/.Xdefaults
+
 # conda
 RUN wget -c "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" \
     && bash Miniforge3-$(uname)-$(uname -m).sh -b -p "${HOME}/conda"
 
+RUN echo "source ~/local_config.zsh" >> ~/.zshrc
 # setup entrypoint
-COPY Extern/Ubuntu20/entrypoint.sh /root/entrypoint.sh
+COPY Ubuntu20/entrypoint.sh /root/entrypoint.sh
 RUN chmod 755 /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
 
