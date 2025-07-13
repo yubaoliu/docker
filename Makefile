@@ -20,6 +20,13 @@ run-ubuntu20-cuda12:
 	docker-compose  -f ./Ubuntu20/docker-compose.yml down \
 	&& docker-compose -f ./Ubuntu20/docker-compose.yml up --remove-orphans
 
+build-ubuntu24-cuda12:
+	docker-compose -f ./Ubuntu24/docker-compose.yml build
+run-ubuntu24-cuda12:
+	docker-compose  -f ./Ubuntu24/docker-compose.yml down \
+	&& docker-compose -f ./Ubuntu24/docker-compose.yml up --remove-orphans
+
+
 build-calib:
 	docker-compose -f ./CamLidarCalib/docker-compose.yml build
 run-calib:

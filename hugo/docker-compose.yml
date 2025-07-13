@@ -1,0 +1,39 @@
+version: '2.3'
+services:
+  hugo:
+    image: slamai/hugo
+    container_name: slamai_hugo
+    build:
+        context: ..
+        dockerfile: hugo/Dockerfile
+    # runtime: nvidia
+    stdin_open: true
+    tty: true
+    privileged: true
+    # network_mode: host
+    ports:
+        - 1313:1313
+    command:
+        - lxterminal
+        # - xterm
+        # - server
+        # - --bind=0.0.0.0
+    environment:
+        - DISPLAY
+        - QT_X11_NO_MITSHM=1
+        - http_proxy=$http_proxy
+        - https_proxy=$https_proxy
+        - no_proxy=$no_proxy
+    devices:
+        - /dev/dri
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        - ~/.Xauthority:/home/ubuntu/.Xauthority
+        - hugo_root:/root
+        # - ~/Tempt/.vim:/home/ubuntu/.vim
+        # - ~/.vscode:/home/ubuntu/.vscode
+        # - /usr/lib/nvidia-cuda-toolkit:/usr/lib/nvidia-cuda-toolkit
+        # - yubao_ubuntu20_cuda11:/root
+
+volumes:
+   hugo_root:

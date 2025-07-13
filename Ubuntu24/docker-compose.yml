@@ -1,15 +1,15 @@
 version: '2.3'
 services:
-  ubuntu20-cuda12.9.0:
-    image: slamai/ubuntu20:cuda12.2.2
-    container_name: ubuntu20
+  ubuntu24-cuda12:
+    image: slamai/ubuntu24:cuda12
+    container_name: ubuntu24
     build:
         context: ..
-        dockerfile: Ubuntu20/Dockerfile
+        dockerfile: Ubuntu24/Dockerfile
         args:
-            CUDA_VERSION: 12.2.2
-            ROS_DISTRO: noetic
-            CUDNN_VERSION: cudnn8
+            CUDA_VERSION: 12.9.1
+            ROS_DISTRO: jazzy
+            CUDNN_VERSION: cudnn
     # user: "1000:1000"
     runtime: nvidia
     stdin_open: true
